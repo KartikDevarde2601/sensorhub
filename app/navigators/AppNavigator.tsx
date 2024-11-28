@@ -11,7 +11,9 @@ import * as Screens from "@/screens"
 import Config from "../config"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { useAppTheme, useThemeProvider } from "@/utils/useAppTheme"
+import { BottomNavigatorParamList } from "./BottomNavigator"
 import { ComponentProps } from "react"
+import { BottomNavigator } from "./BottomNavigator"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -28,8 +30,7 @@ import { ComponentProps } from "react"
  */
 export type AppStackParamList = {
   Welcome: undefined
-  // 🔥 Your screens go here
-  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  BottomNavigation: { screen?: keyof BottomNavigatorParamList }
 }
 
 /**
@@ -62,8 +63,7 @@ const AppStack = observer(function AppStack() {
       }}
     >
       <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
-      {/** 🔥 Your screens go here */}
-      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+      <Stack.Screen name="BottomNavigation" component={BottomNavigator} />
     </Stack.Navigator>
   )
 })

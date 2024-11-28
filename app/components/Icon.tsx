@@ -100,6 +100,9 @@ export const iconRegistry = {
   more: require("../../assets/icons/more.png"),
   settings: require("../../assets/icons/settings.png"),
   view: require("../../assets/icons/view.png"),
+  session: require("../../assets/icons/session.png"),
+  file: require("../../assets/icons/file.png"),
+  device: require("../../assets/icons/device.png"),
   x: require("../../assets/icons/x.png"),
 }
 

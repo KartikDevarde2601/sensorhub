@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite"
 import { FC } from "react"
 import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
-import { Text, Screen } from "@/components"
+import { Text, Screen, Button } from "@/components"
 import { isRTL } from "../i18n"
 import { AppStackScreenProps } from "../navigators"
 import type { ThemedStyle } from "@/theme"
@@ -13,10 +13,15 @@ const welcomeFace = require("../../assets/images/welcome-face.png")
 
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
-export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen() {
+export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen(_props) {
   const { themed, theme } = useAppTheme()
+  const { navigation } = _props
 
   const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
+
+  function handleGetStarted() {
+    navigation.navigate("BottomNavigation", { screen: "Device" })
+  }
 
   return (
     <Screen preset="fixed">
@@ -39,6 +44,7 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
 
       <View style={themed([$bottomContainer, $bottomContainerInsets])}>
         <Text tx="welcomeScreen:postscript" size="md" />
+        <Button text="Get Started" onPress={handleGetStarted} />
       </View>
     </Screen>
   )
