@@ -1,4 +1,4 @@
-const { withAppBuildGradle } = require("@expo/config-plugins");
+const { withAppBuildGradle } = require("@expo/config-plugins")
 
 module.exports = function withCustomPackagingOptions(config) {
   return withAppBuildGradle(config, (config) => {
@@ -14,13 +14,13 @@ module.exports = function withCustomPackagingOptions(config) {
         resources {
             excludes.add("META-INF/*")
         }
-    }`
-            );
+    }`,
+            )
           }
-          return match;
-        }
-      );
+          return match
+        },
+      )
     }
-    return config;
-  });
-};
+    return config
+  })
+}

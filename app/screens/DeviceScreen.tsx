@@ -1,23 +1,22 @@
 import { FC } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle, View } from "react-native"
+import { ViewStyle, SafeAreaView, TextStyle } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
-import { Screen, Button, Icon, Text } from "@/components"
+import { DeviceItem, Button, Icon, Text } from "@/components"
 import { useAppTheme } from "@/utils/useAppTheme"
 import { colors } from "@/theme"
-// import { useNavigation } from "@react-navigation/native"
-// import { useStores } from "@/models"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import type { ThemedStyle } from "@/theme"
 
 interface DeviceScreenProps extends BottomNavigatorProps<"Device"> {}
 
 export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScreen(_props) {
-  // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
-
   const { themed, theme } = useAppTheme()
   const { navigation } = _props
+  const insets = useSafeAreaInsets()
+
   return (
-    <View style={$root}>
+    <SafeAreaView style={[{ paddingTop: insets.top, paddingBottom: insets.bottom }, $root]}>
       <Button
         RightAccessory={(props) => (
           <Icon
@@ -32,18 +31,23 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         pressedStyle={$fabpress}
         onPress={() => console.log("add device")}
       ></Button>
-    </View>
+      <Text text="Device List" style={themed($welcomeHeading)} preset="heading" />
+      <DeviceItem />
+    </SafeAreaView>
   )
 })
 
 const $root: ViewStyle = {
   flex: 1,
+  position: "relative",
+  marginHorizontal: 10,
+  marginVertical: 10,
 }
 
 const $fab: ViewStyle = {
   position: "absolute",
   bottom: 30,
-  right: 30,
+  right: 24,
   borderRadius: 16,
   alignItems: "center",
   justifyContent: "center",
@@ -53,3 +57,7 @@ const $fab: ViewStyle = {
 const $fabpress: ViewStyle = {
   backgroundColor: colors.palette.primary200,
 }
+
+const $welcomeHeading: ThemedStyle<TextStyle> = ({ spacing }) => ({
+  marginBottom: spacing.md,
+})

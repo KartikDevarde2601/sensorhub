@@ -11,9 +11,8 @@ import * as Screens from "@/screens"
 import Config from "../config"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { useAppTheme, useThemeProvider } from "@/utils/useAppTheme"
-import { BottomNavigatorParamList } from "./BottomNavigator"
+import { BottomNavigatorParamList, BottomNavigator } from "./BottomNavigator"
 import { ComponentProps } from "react"
-import { BottomNavigator } from "./BottomNavigator"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator

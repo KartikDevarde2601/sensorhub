@@ -28,7 +28,8 @@
     "web": "npx expo start --web",
     "bundle:web": "npx expo export --platform web",
     "serve:web": "npx server dist",
-    "prebuild:clean": "npx expo prebuild --clean"
+    "prebuild:clean": "npx expo prebuild --clean",
+    "prettierrc": "prettier --write ."
   },
   "dependencies": {
     "@d11/react-native-mqtt": "^0.0.3",

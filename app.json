@@ -18,9 +18,7 @@
       "fallbackToCacheTimeout": 0
     },
     "jsEngine": "hermes",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
       "package": "com.sensorhub",
@@ -55,7 +53,7 @@
       "bundler": "metro"
     },
     "plugins": [
-      "./withCustomPackagingOptions.js" ,
+      "./withCustomPackagingOptions.js",
       "expo-localization",
       [
         "expo-build-properties",

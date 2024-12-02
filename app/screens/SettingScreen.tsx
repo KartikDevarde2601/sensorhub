@@ -1,9 +1,8 @@
 import { FC } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
-import { AppStackScreenProps } from "@/navigators"
+import { AppStackScreenProps, BottomNavigatorProps } from "@/navigators"
 import { Screen, Text } from "@/components"
-import { BottomNavigatorProps } from "@/navigators"
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "@/models"
 
