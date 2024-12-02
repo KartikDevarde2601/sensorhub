@@ -16,7 +16,7 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
   // Pull in navigation via hook
   // const navigation = useNavigation()
   return (
-    <Screen style={$root} preset="scroll">
+    <Screen style={$root} preset="fixed">
       <Text text="setting" />
     </Screen>
   )
@@ -24,4 +24,6 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
 
 const $root: ViewStyle = {
   flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
 }

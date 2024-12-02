@@ -66,6 +66,8 @@ export const colors = {
    * The main tinting color.
    */
   tint: palette.primary500,
+
+  tintactive: palette.primary600,
   /**
    * The inactive tinting color.
    */

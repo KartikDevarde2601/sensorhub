@@ -15,7 +15,7 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
   // Pull in navigation via hook
   // const navigation = useNavigation()
   return (
-    <Screen style={$root} preset="scroll">
+    <Screen style={$root} preset="fixed">
       <Text text="session" />
     </Screen>
   )
@@ -23,4 +23,6 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
 
 const $root: ViewStyle = {
   flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
 }

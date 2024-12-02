@@ -15,7 +15,7 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
   // Pull in navigation via hook
   // const navigation = useNavigation()
   return (
-    <Screen style={$root} preset="scroll">
+    <Screen style={$root} preset="fixed">
       <Text text="file" />
     </Screen>
   )
@@ -23,4 +23,6 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
 
 const $root: ViewStyle = {
   flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
 }

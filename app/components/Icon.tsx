@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from "react-native"
 import { useAppTheme } from "@/utils/useAppTheme"
+import { pl } from "date-fns/locale"
 
 export type IconTypes = keyof typeof iconRegistry
 
@@ -104,6 +105,7 @@ export const iconRegistry = {
   file: require("../../assets/icons/file.png"),
   device: require("../../assets/icons/device.png"),
   x: require("../../assets/icons/x.png"),
+  plus: require("../../assets/icons/plus.png"),
 }
 
 const $imageStyleBase: ImageStyle = {
