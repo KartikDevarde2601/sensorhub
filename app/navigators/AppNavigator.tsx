@@ -13,6 +13,9 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { useAppTheme, useThemeProvider } from "@/utils/useAppTheme"
 import { BottomNavigatorParamList, BottomNavigator } from "./BottomNavigator"
 import { ComponentProps } from "react"
+import { TouchableOpacity } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+import { Icon } from "@/components"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -30,6 +33,7 @@ import { ComponentProps } from "react"
 export type AppStackParamList = {
   Welcome: undefined
   BottomNavigation: { screen?: keyof BottomNavigatorParamList }
+  AddDevice: undefined
 }
 
 /**
@@ -51,6 +55,8 @@ const AppStack = observer(function AppStack() {
     theme: { colors },
   } = useAppTheme()
 
+  const navigation = useNavigation()
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -62,6 +68,23 @@ const AppStack = observer(function AppStack() {
       }}
     >
       <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
+      <Stack.Screen
+        name="AddDevice"
+        component={Screens.AddDeviceScreen}
+        options={{
+          headerShown: true,
+          headerTitle: () => null,
+          headerStyle: $headeStyle(colors),
+          headerShadowVisible: false,
+          headerLeft: (props) => {
+            return (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon icon="arrowLeft" size={30} color={colors.tint} />
+              </TouchableOpacity>
+            )
+          },
+        }}
+      />
       <Stack.Screen name="BottomNavigation" component={BottomNavigator} />
     </Stack.Navigator>
   )
@@ -82,4 +105,13 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
       </NavigationContainer>
     </ThemeProvider>
   )
+})
+
+const $headeStyle = (colors: any) => ({
+  backgroundColor: colors.background,
+  elevation: 0,
+  shadowOpacity: 0,
+  borderBottomWidth: 0,
+  shadowColor: "transparent",
+  shadowOffset: { width: 0, height: 0 },
 })

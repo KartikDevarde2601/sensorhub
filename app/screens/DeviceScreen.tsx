@@ -1,8 +1,8 @@
 import { FC } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle, SafeAreaView, TextStyle } from "react-native"
+import { ViewStyle, View, TextStyle } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
-import { DeviceItem, Button, Icon, Text } from "@/components"
+import { DeviceItem, Button, Icon, Text, Screen } from "@/components"
 import { useAppTheme } from "@/utils/useAppTheme"
 import { colors } from "@/theme"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -16,7 +16,11 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
   const insets = useSafeAreaInsets()
 
   return (
-    <SafeAreaView style={[{ paddingTop: insets.top, paddingBottom: insets.bottom }, $root]}>
+    <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)}>
+      <View style={$root}>
+        <Text text="Device List" style={themed($welcomeHeading)} preset="heading" />
+        <DeviceItem />
+      </View>
       <Button
         RightAccessory={(props) => (
           <Icon
@@ -29,24 +33,25 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         preset="default"
         style={[$fab, { backgroundColor: theme.colors.palette.primary100 }]}
         pressedStyle={$fabpress}
-        onPress={() => console.log("add device")}
-      ></Button>
-      <Text text="Device List" style={themed($welcomeHeading)} preset="heading" />
-      <DeviceItem />
-    </SafeAreaView>
+        onPress={() => navigation.navigate("AddDevice")}
+      />
+    </Screen>
   )
+})
+
+const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+  paddingVertical: spacing.xxl,
+  paddingHorizontal: spacing.md,
+  flex: 1,
 })
 
 const $root: ViewStyle = {
   flex: 1,
-  position: "relative",
-  marginHorizontal: 10,
-  marginVertical: 10,
 }
 
 const $fab: ViewStyle = {
   position: "absolute",
-  bottom: 30,
+  bottom: 16,
   right: 24,
   borderRadius: 16,
   alignItems: "center",
