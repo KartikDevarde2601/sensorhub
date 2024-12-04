@@ -1,11 +1,13 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { DeviceStoreModel } from "./DeviceStore"
 import { SessionStoreModel } from "./SessionStore"
-
 /**
  * A RootStore model.
  */
-export const RootStoreModel = types.model("RootStore").props({})
+export const RootStoreModel = types.model("RootStore").props({
+    devices: types.optional(DeviceStoreModel, {}),
+    sessions: types.optional(SessionStoreModel, {}),
+})
 
 /**
  * The RootStore instance.

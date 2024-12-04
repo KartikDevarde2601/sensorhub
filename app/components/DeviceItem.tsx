@@ -2,12 +2,14 @@ import { StyleProp, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
-import { Text, Card, AutoImage, Button, Icon } from "@/components"
+import { Text, Card, Icon } from "@/components"
+import { useNavigation, NavigationProp } from "@react-navigation/native"
+import { AppStackParamList } from "@/navigators/AppNavigator"
+import { Device } from "@/models/Device"
 
 export interface DeviceItemProps {
-  /**
-   * An optional style override useful for padding & margin.
-   */
+  onPress?: () => void
+  device: Device
   style?: StyleProp<ViewStyle>
 }
 
@@ -16,41 +18,41 @@ export interface DeviceItemProps {
  */
 
 export const DeviceItem = observer(function DeviceItem(props: DeviceItemProps) {
-  const { style } = props
+  const { style, onPress, device } = props
   const $styles = [$container, style]
   const { themed, theme } = useAppTheme()
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>()
 
   return (
-    <View style={$styles}>
-      <Card
-        onPress={() => console.log("device item")}
-        style={{
-          paddingHorizontal: 30,
-          paddingVertical: 10,
-          alignContent: "center",
-          justifyContent: "center",
-        }}
-        LeftComponent={
-          <View style={$iconContainer}>
-            <Icon icon="device" size={50} color={theme.colors.tint} />
+    <Card
+      onPress={() => navigation.navigate("AddDevice", { device_id: device.id })}
+      style={themed($item)}
+      LeftComponent={
+        <View style={$iconContainer}>
+          <Icon icon="device" size={50} color={theme.colors.tint} />
+        </View>
+      }
+      heading={device.name}
+      ContentComponent={
+        <View style={$contentContainer}>
+          <View style={$topicTextContainer}>
+            <Text text="Num of Topics :" />
+            <Text text={device.numTopics.toString()} />
           </View>
-        }
-        heading="Device Name"
-        ContentComponent={
-          <View style={$contentContainer}>
-            <View style={$topicTextContainer}>
-              <Text text="Num of Topics :" />
-              <Text text="34" />
-            </View>
-            <View style={$topicTextContainer}>
-              <Text text="Num of Session :" />
-              <Text text="34" />
-            </View>
+          <View style={$topicTextContainer}>
+            <Text text="Num of Session :" />
+            <Text text={device.numSessions.toString()} />
           </View>
-        }
-      />
-    </View>
+        </View>
+      }
+    />
   )
+})
+const $item: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+  padding: spacing.md,
+  marginTop: spacing.md,
+  minHeight: 120,
+  backgroundColor: colors.palette.neutral100,
 })
 
 const $iconContainer: ViewStyle = {

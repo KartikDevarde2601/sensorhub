@@ -16,6 +16,7 @@ import { ComponentProps } from "react"
 import { TouchableOpacity } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { Icon } from "@/components"
+import { Device } from "@/models/Device"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -33,7 +34,7 @@ import { Icon } from "@/components"
 export type AppStackParamList = {
   Welcome: undefined
   BottomNavigation: { screen?: keyof BottomNavigatorParamList }
-  AddDevice: undefined
+  AddDevice: { device_id: string }
 }
 
 /**
