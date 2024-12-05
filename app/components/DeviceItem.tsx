@@ -41,7 +41,7 @@ export const DeviceItem = observer(function DeviceItem(props: DeviceItemProps) {
           </View>
           <View style={$topicTextContainer}>
             <Text text="Num of Session :" />
-            <Text text={device.numSessions.toString()} />
+            <Text text={device.sessions.toString()} />
           </View>
         </View>
       }

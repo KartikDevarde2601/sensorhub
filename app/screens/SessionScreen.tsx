@@ -38,17 +38,36 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
   const [sessionName, setSessionName] = useState("")
   const [description, setDescription] = useState("")
   const [isDropdownOpen, setDropdownOpen] = useState(false)
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null)
   const navigation = useNavigation()
 
   const { themed, theme } = useAppTheme()
 
-  const handleSaveDevice = () => {
-    if (!sessionName) {
+  const handleSaveSession = () => {
+    if (!sessionName && !selectedDevice) {
       return
     }
-    sessions.addSession(sessionName, devices.devicesForList[0], description)
+    if (selectedDevice) {
+      sessions.addSession(sessionName, selectedDevice, description)
+    }
     setModalVisible(false)
   }
+
+  const handleDeviceSelect = (device: Device) => {
+    setSelectedDevice(device)
+    setDropdownOpen(false)
+  }
+
+  const TopicItem: FC<TopicItemProps> = observer(function TopicItem({ device }) {
+    return (
+      <ListItem
+        style={$itemContainer}
+        bottomSeparator={true}
+        text={device.name}
+        onPress={() => handleDeviceSelect(device)}
+      ></ListItem>
+    )
+  })
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
@@ -98,20 +117,18 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
             value={sessionName}
             onChangeText={(value) => setSessionName(value)}
             label="Session Name"
-            helper="ex: kartik devarde"
           />
           <TextField
             value={description}
             onChangeText={(value) => setDescription(value)}
             label="Session Description"
-            helper="ex: normal patient"
           />
           <Dropdown
             label="Select User"
             isOpen={isDropdownOpen}
             onClick={() => setDropdownOpen(!isDropdownOpen)}
             placeholder="Select User"
-            selectedValue="John Doe"
+            selectedValue={selectedDevice?.name}
           />
           {isDropdownOpen ? (
             <View style={themed($devicelistContainer)}>
@@ -119,10 +136,6 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
                 extraData={devices?.devicesForList.length}
                 data={devices?.devicesForList.slice()}
                 renderItem={({ item }) => <TopicItem device={item} />}
-                onLayout={(event) => {
-                  const { width, height } = event.nativeEvent.layout
-                  console.log("ListView Layout:", { width, height })
-                }}
                 estimatedItemSize={56}
               />
             </View>
@@ -139,7 +152,7 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
               preset="filled"
               text="Save Session"
               textStyle={{ color: colors.tint }}
-              onPress={() => handleSaveDevice()}
+              onPress={() => handleSaveSession()}
               style={themed($button)}
             />
           </View>
@@ -147,10 +160,6 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
       </Modal>
     </Screen>
   )
-})
-
-const TopicItem: FC<TopicItemProps> = observer(function TopicItem({ device }) {
-  return <ListItem style={$itemContainer} bottomSeparator={true} text={device.name}></ListItem>
 })
 
 // #region Styles
@@ -162,6 +171,7 @@ const $listContentContainer: ThemedStyle<ContentStyle> = ({ spacing }) => ({
 
 const $devicelistContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   flex: 1,
+  alignContent: "center",
   marginTop: spacing.md,
   gap: spacing.sm,
   minHeight: 100,

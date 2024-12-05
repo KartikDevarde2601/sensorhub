@@ -19,14 +19,16 @@ export const SessionStoreModel = types
     },
   })) 
   .actions((self) => ({
-    addSession(name:string, device:Device,description :string) {
+    addSession(name: string, device: Device, description: string) {
       const newSession = SessionModel.create({
         id: uuid.v4(),
         sessionName: name,
         description: description,
-        device: device,
-      })
-      self.sessions.push(newSession)
+        device: device, // Explicitly set the device reference
+      });
+       
+      device.IncreseSession(device.id);
+      self.sessions.push(newSession);
     }
   })) 
 

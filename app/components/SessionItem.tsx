@@ -1,7 +1,7 @@
 import { StyleProp, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { useAppTheme } from "@/utils/useAppTheme"
-import type { ThemedStyle } from "@/theme"
+import { colors, type ThemedStyle } from "@/theme"
 import { Text, Card, Icon } from "@/components"
 import { Session } from "@/models"
 import { useNavigation, NavigationProp } from "@react-navigation/native"
@@ -44,8 +44,11 @@ export const SessionItem = observer(function SessionItem(props: SessionItemProps
             <Text text={session.deviceName.toString()} />
           </View>
           <View style={$topicTextContainer}>
-            <Text text="Description :" />
-            <Text text={session.description} />
+            <Text
+              text={session.description}
+              preset="default"
+              style={{ color: colors.palette.neutral500 }}
+            />
           </View>
         </View>
       }

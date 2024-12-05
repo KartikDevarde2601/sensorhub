@@ -12,7 +12,7 @@ export const SessionModel = types
     sessionName: types.string,
     description : types.string,
     createdAt: types.optional(types.Date, () => new Date()),
-    device: types.late((): any => types.reference(DeviceModel)), // Explicitly typed return value
+    device: types.late((): any => types.reference(DeviceModel)),
   })
   .actions(withSetPropAction)
   .views((self) => ({

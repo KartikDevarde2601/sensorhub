@@ -1,7 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { TopicModel } from "./Topic"
-import { SessionModel } from "./Session"
 import uuid from "react-native-uuid"
 
 /**
@@ -14,16 +13,14 @@ export const DeviceModel = types
     name: types.string,
     createdAt: types.optional(types.Date, () => new Date()),
     topics: types.optional(types.array(TopicModel), []),
-    sessions:types.optional(types.late(()=>types.array(types.reference(SessionModel))), [])
+     sessions: types.optional(types.number, 0),
   })
   .actions(withSetPropAction)
   .views((self) => ({
     get numTopics() {
       return self.topics.length
     },
-    get numSessions() {
-      return self.sessions.length
-    },
+   
     get topicsForList() {
       return self.topics
     }
@@ -33,9 +30,17 @@ export const DeviceModel = types
       const newTopic = TopicModel.create({ id: uuid.v4(), topicName: name })
       self.topics.push(newTopic)
     },
-     addSession(session: Instance<typeof SessionModel>) {
-      self.sessions.push(session)
-     },
+    IncreseSession(deviceId:string) {
+      if(deviceId == self.id){
+        self.sessions += 1
+      }
+    
+    },
+    DecreseSession(deviceId:string) {
+      if(deviceId == self.id){
+        self.sessions -= 1
+      }
+    },
     deleteTopic(topic: Instance<typeof TopicModel>) {
       self.topics.remove(topic)
     }
