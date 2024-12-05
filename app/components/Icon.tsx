@@ -106,6 +106,8 @@ export const iconRegistry = {
   device: require("../../assets/icons/device.png"),
   x: require("../../assets/icons/x.png"),
   plus: require("../../assets/icons/plus.png"),
+  chevronUp: require("../../assets/icons/chevron-up.png"),
+  chevronDown: require("../../assets/icons/chevron-down.png"),
   arrowLeft: require("../../assets/icons/arrow-left.png"),
   crossDelete: require("../../assets/icons/cross-delete.png"),
 }

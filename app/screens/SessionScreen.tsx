@@ -1,6 +1,6 @@
 import { FC } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle, View } from "react-native"
+import { ViewStyle, View, TouchableOpacity } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
 import {
   Screen,
@@ -12,6 +12,8 @@ import {
   Modal,
   Icon,
   TextField,
+  Dropdown,
+  ListItem,
 } from "@/components"
 import { Session } from "@/models"
 import { useAppTheme } from "@/utils/useAppTheme"
@@ -22,8 +24,12 @@ import { useState } from "react"
 import { colors } from "@/theme"
 import { ThemedStyle } from "@/theme"
 import { ContentStyle } from "@shopify/flash-list"
+import { Device } from "@/models"
 
 interface SessionScreenProps extends BottomNavigatorProps<"Session"> {}
+interface TopicItemProps {
+  device: Device
+}
 
 export const SessionScreen: FC<SessionScreenProps> = observer(function SessionScreen() {
   // Pull in one of our MST stores
@@ -31,6 +37,7 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
   const [isModalVisible, setModalVisible] = useState(false)
   const [sessionName, setSessionName] = useState("")
   const [description, setDescription] = useState("")
+  const [isDropdownOpen, setDropdownOpen] = useState(false)
   const navigation = useNavigation()
 
   const { themed, theme } = useAppTheme()
@@ -99,6 +106,28 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
             label="Session Description"
             helper="ex: normal patient"
           />
+          <Dropdown
+            label="Select User"
+            isOpen={isDropdownOpen}
+            onClick={() => setDropdownOpen(!isDropdownOpen)}
+            placeholder="Select User"
+            selectedValue="John Doe"
+          />
+          {isDropdownOpen ? (
+            <View style={themed($devicelistContainer)}>
+              <ListView<Device>
+                extraData={devices?.devicesForList.length}
+                data={devices?.devicesForList.slice()}
+                renderItem={({ item }) => <TopicItem device={item} />}
+                onLayout={(event) => {
+                  const { width, height } = event.nativeEvent.layout
+                  console.log("ListView Layout:", { width, height })
+                }}
+                estimatedItemSize={56}
+              />
+            </View>
+          ) : null}
+
           <View style={themed($buttonContainer)}>
             <Button
               preset="default"
@@ -120,11 +149,22 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
   )
 })
 
+const TopicItem: FC<TopicItemProps> = observer(function TopicItem({ device }) {
+  return <ListItem style={$itemContainer} bottomSeparator={true} text={device.name}></ListItem>
+})
+
 // #region Styles
 const $listContentContainer: ThemedStyle<ContentStyle> = ({ spacing }) => ({
   paddingHorizontal: spacing.md,
   paddingTop: spacing.xl,
   paddingBottom: spacing.md,
+})
+
+const $devicelistContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+  flex: 1,
+  marginTop: spacing.md,
+  gap: spacing.sm,
+  minHeight: 100,
 })
 
 const $modalContent: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
@@ -141,11 +181,10 @@ const $buttonContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   justifyContent: "space-between",
 })
 
-const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  paddingVertical: spacing.xxl,
-  paddingHorizontal: spacing.md,
-  flex: 1,
-})
+const $itemContainer: ViewStyle = {
+  alignItems: "center",
+}
+
 const $button: ThemedStyle<ViewStyle> = () => ({
   borderRadius: 24,
 })
