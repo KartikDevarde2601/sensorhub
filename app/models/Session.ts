@@ -8,14 +8,21 @@ import { DeviceModel } from "./Device"
 export const SessionModel = types
   .model("Session")
   .props({
-    id: types.identifierNumber,
-    name: types.string,
+    id: types.identifier,
+    sessionName: types.string,
+    description : types.string,
     createdAt: types.optional(types.Date, () => new Date()),
     device: types.late((): any => types.reference(DeviceModel)), // Explicitly typed return value
-
   })
   .actions(withSetPropAction)
-  .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .views((self) => ({
+    get deviceName() {
+      return self.device.name
+    },
+    get deviceTopicsNumber(){
+      return self.device.numTopics
+    }
+  })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface Session extends Instance<typeof SessionModel> {}

@@ -1,6 +1,8 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { SessionModel } from "./Session"
+import { Device } from "./Device"
+import uuid from "react-native-uuid"
 
 /**
  * Model description here for TypeScript hints.
@@ -11,8 +13,22 @@ export const SessionStoreModel = types
     sessions: types.optional(types.array(SessionModel), []),
   })
   .actions(withSetPropAction)
-  .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
-  .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  .views((self) => ({
+    get sessionsForList() {
+      return self.sessions
+    },
+  })) 
+  .actions((self) => ({
+    addSession(name:string, device:Device,description :string) {
+      const newSession = SessionModel.create({
+        id: uuid.v4(),
+        sessionName: name,
+        description: description,
+        device: device,
+      })
+      self.sessions.push(newSession)
+    }
+  })) 
 
 export interface SessionStore extends Instance<typeof SessionStoreModel> {}
 export interface SessionStoreSnapshotOut extends SnapshotOut<typeof SessionStoreModel> {}
