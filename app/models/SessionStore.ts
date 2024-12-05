@@ -29,6 +29,9 @@ export const SessionStoreModel = types
        
       device.IncreseSession(device.id);
       self.sessions.push(newSession);
+    },
+    getSessionById(id: string) {
+      return self.sessions.find((session) => session.id === id)
     }
   })) 
 

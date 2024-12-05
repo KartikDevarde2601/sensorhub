@@ -1,6 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { DeviceModel } from "./Device"
+import { Device, DeviceModel } from "./Device"
 
 /**
  * Model description here for TypeScript hints.
@@ -22,8 +22,14 @@ export const SessionModel = types
     get deviceTopicsNumber(){
       return self.device.numTopics
     }
-  })) // eslint-disable-line @typescript-eslint/no-unused-vars
-  .actions((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
+  })) 
+  .actions((self) => ({
+   updateSession(sessionName: string, description: string, device: Device) {
+    self.sessionName = sessionName;
+    self.description = description;
+    self.device = device;
+   },
+  })) 
 
 export interface Session extends Instance<typeof SessionModel> {}
 export interface SessionSnapshotOut extends SnapshotOut<typeof SessionModel> {}

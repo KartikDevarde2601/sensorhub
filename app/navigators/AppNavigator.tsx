@@ -16,7 +16,6 @@ import { ComponentProps } from "react"
 import { TouchableOpacity } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { Icon } from "@/components"
-import { Device } from "@/models/Device"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -35,6 +34,8 @@ export type AppStackParamList = {
   Welcome: undefined
   BottomNavigation: { screen?: keyof BottomNavigatorParamList }
   AddDevice: { device_id: string }
+  EditSession: { session_id: string }
+  DataCollection: { session_id: string }
 }
 
 /**
@@ -72,6 +73,40 @@ const AppStack = observer(function AppStack() {
       <Stack.Screen
         name="AddDevice"
         component={Screens.AddDeviceScreen}
+        options={{
+          headerShown: true,
+          headerTitle: () => null,
+          headerStyle: $headeStyle(colors),
+          headerShadowVisible: false,
+          headerLeft: (props) => {
+            return (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon icon="arrowLeft" size={30} color={colors.tint} />
+              </TouchableOpacity>
+            )
+          },
+        }}
+      />
+      <Stack.Screen
+        name="EditSession"
+        component={Screens.EditSessionScreen}
+        options={{
+          headerShown: true,
+          headerTitle: () => null,
+          headerStyle: $headeStyle(colors),
+          headerShadowVisible: false,
+          headerLeft: (props) => {
+            return (
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon icon="arrowLeft" size={30} color={colors.tint} />
+              </TouchableOpacity>
+            )
+          },
+        }}
+      />
+      <Stack.Screen
+        name="DataCollection"
+        component={Screens.DataCollectionScreen}
         options={{
           headerShown: true,
           headerTitle: () => null,

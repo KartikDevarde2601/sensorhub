@@ -22,7 +22,6 @@ import { Topic } from "@/models/Topic"
 import { useEffect } from "react"
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native"
 import { Device } from "@/models"
-import { set } from "date-fns"
 
 interface AddDeviceScreenProps extends AppStackScreenProps<"AddDevice"> {}
 
@@ -44,17 +43,6 @@ export const AddDeviceScreen: FC<AddDeviceScreenProps> = observer(function AddDe
     themed,
     theme: { colors },
   } = useAppTheme()
-
-  const data = [
-    {
-      topic: "lovingroom/temperature",
-      id: "1",
-    },
-    {
-      topic: "lovingroom/humidity",
-      id: "2",
-    },
-  ]
 
   const handleSaveDevice = () => {
     console.log("device saved")

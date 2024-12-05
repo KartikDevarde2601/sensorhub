@@ -5,6 +5,7 @@ import { colors, type ThemedStyle } from "@/theme"
 import { Text, Card, Icon } from "@/components"
 import { Session } from "@/models"
 import { useNavigation, NavigationProp } from "@react-navigation/native"
+import { AppStackParamList } from "@/navigators/AppNavigator"
 
 export interface SessionItemProps {
   onPress?: () => void
@@ -21,15 +22,16 @@ export const SessionItem = observer(function SessionItem(props: SessionItemProps
   const $styles = [$container, style]
   const { themed, theme } = useAppTheme()
 
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>()
 
   return (
     <Card
-      onPress={() => console.log("SessionItem")}
+      onPress={() => navigation.navigate("EditSession", { session_id: session.id })}
+      onLongPress={() => navigation.navigate("DataCollection", { session_id: session.id })}
       style={themed($item)}
       LeftComponent={
         <View style={$iconContainer}>
-          <Icon icon="device" size={50} color={theme.colors.tint} />
+          <Icon icon="session" size={50} color={theme.colors.tint} />
         </View>
       }
       heading={session.sessionName}

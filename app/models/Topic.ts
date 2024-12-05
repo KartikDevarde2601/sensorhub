@@ -1,6 +1,7 @@
 import { getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry"
+import { is } from "date-fns/locale"
+import { add } from "date-fns"
 
 /**
  * Model description here for TypeScript hints.
@@ -10,6 +11,9 @@ export const TopicModel = types
   .props({
     id: types.identifier,
     topicName: types.string,
+    Issubscribed: types.optional(types.boolean, false),
+    message: types.optional(types.string, ""),
+    isMessageDisplay: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .views((self) => ({})) 
@@ -21,6 +25,15 @@ export const TopicModel = types
     const parent = getParent(self, 2) as { deleteTopic: (topic: Topic) => void }
     parent.deleteTopic(self as Topic)
     },
+    updateSubcriptionStats(){
+      self.Issubscribed = !self.Issubscribed
+    },
+    updateMessageDisplay(){
+      self.isMessageDisplay = !self.isMessageDisplay
+    },
+    addMessage(message:string){
+      self.message = message
+    }
   })) 
 export interface Topic extends Instance<typeof TopicModel> {}
 export interface TopicSnapshotOut extends SnapshotOut<typeof TopicModel> {}
