@@ -21,6 +21,12 @@ export const SessionModel = types
     },
     get deviceTopicsNumber(){
       return self.device.numTopics
+    },
+    get deviceTopics(){
+      return self.device.topics
+    },
+    get deviceTopicLength(){
+      return self.device.topics.length
     }
   })) 
   .actions((self) => ({

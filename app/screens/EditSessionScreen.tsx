@@ -2,7 +2,7 @@ import { FC, useState, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { AppStackScreenProps } from "@/navigators"
-import { Screen, Text, Dropdown, ListItem, TextField, Icon, ListView, Button } from "@/components"
+import { Screen, Text, Dropdown, ListItem, TextField, ListView, Button } from "@/components"
 import { Session } from "@/models"
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native"
 import { useStores } from "@/models"
@@ -90,10 +90,9 @@ export const EditSessionScreen: FC<EditSessionScreenProps> = observer(function E
           label="Session Description"
         />
         <Dropdown
-          label="Select User"
+          label="Select Device"
           isOpen={isDropdownOpen}
           onClick={() => setDropdownOpen(!isDropdownOpen)}
-          placeholder="Select User"
           selectedValue={selectedDevice?.name}
         />
         {isDropdownOpen ? (

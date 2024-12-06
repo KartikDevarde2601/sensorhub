@@ -110,6 +110,9 @@ export const iconRegistry = {
   chevronDown: require("../../assets/icons/chevron-down.png"),
   arrowLeft: require("../../assets/icons/arrow-left.png"),
   crossDelete: require("../../assets/icons/cross-delete.png"),
+  mqtt: require("../../assets/icons/mqtt.png"),
+  sensor: require("../../assets/icons/sensor.png"),
+  sensorIndicators: require("../../assets/icons/sensorIndicator.png"),
 }
 
 const $imageStyleBase: ImageStyle = {
