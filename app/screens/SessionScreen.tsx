@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View, TouchableOpacity } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
@@ -25,6 +25,7 @@ import { colors } from "@/theme"
 import { ThemedStyle } from "@/theme"
 import { ContentStyle } from "@shopify/flash-list"
 import { Device } from "@/models"
+import { use } from "i18next"
 
 interface SessionScreenProps extends BottomNavigatorProps<"Session"> {}
 interface TopicItemProps {

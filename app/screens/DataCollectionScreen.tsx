@@ -27,7 +27,8 @@ interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"
 export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
   function DataCollectionScreen() {
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
-    const { sessions } = useStores()
+    const { sessions, mqtt } = useStores()
+    console.log("mqtt_client", mqtt.client)
     const [session, setSession] = useState<Session | null>(null)
     // Pull in navigation via hook
     const navigation = useNavigation()
@@ -117,7 +118,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
           )}
         />
         <View style={themed($buttonContainer)}>
-          <Button text="connect" style={themed($button)} />
+          <Button text="connect" style={themed($button)} onPress={() => mqtt.client?.connect()} />
           <Button text="start" style={themed($button)} />
           <Button text="subscribe" style={themed($button)} />
           <Button text="complete" style={themed($button)} />

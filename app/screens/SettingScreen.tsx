@@ -9,31 +9,33 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import { useState } from "react"
 // import { useNavigation } from "@react-navigation/native"
-// import { useStores } from "@/models"
+import { useStores } from "@/models"
 
 interface SettingScreenProps extends BottomNavigatorProps<"Setting"> {}
 
-const mqttBasicConfigValidation = Yup.object().shape({
+const mqttConfigValidation = Yup.object().shape({
   clientId: Yup.string().required("Required"),
   host: Yup.string().required("Required"),
   port: Yup.number().required("Required"),
-})
-
-const mqttAdvancedConfigValidation = Yup.object().shape({
-  password: Yup.string(),
-  username: Yup.string(),
-  autoReconnect: Yup.boolean(),
-  cleanSession: Yup.boolean(),
-  enableSslConfig: Yup.boolean(),
-  keepAlive: Yup.number(),
-  maxBackoffTime: Yup.number(),
-  retryCount: Yup.number(),
-  jitter: Yup.number(),
+  option: Yup.object().shape({
+    password: Yup.string(),
+    username: Yup.string(),
+    autoReconnect: Yup.boolean(),
+    cleanSession: Yup.boolean(),
+    enableSslConfig: Yup.boolean(),
+    keepAlive: Yup.number(),
+    maxBackoffTime: Yup.number(),
+    retryCount: Yup.number(),
+    jitter: Yup.number(),
+  }),
 })
 
 export const SettingScreen: FC<SettingScreenProps> = observer(function SettingScreen() {
   // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
+  const { mqtt } = useStores()
+
+  console.log(mqtt)
+  console.log(mqtt.client)
 
   const [EnableadvancedConfig, setEnableadvancedConfig] = useState(false)
 
@@ -45,35 +47,19 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
     theme: { colors },
   } = useAppTheme()
 
-  const basicFormik = useFormik({
+  const formik = useFormik({
     initialValues: {
-      clientId: "",
-      host: "",
-      port: 1883,
+      clientId: mqtt.clientId,
+      host: mqtt.host,
+      port: mqtt.port,
+      option: mqtt.options,
     },
-    validationSchema: mqttBasicConfigValidation,
+    validationSchema: mqttConfigValidation,
     onSubmit: (values) => {
-      console.log("Form data", values)
+      mqtt.editConfig(values)
     },
   })
 
-  const advanceFormik = useFormik({
-    initialValues: {
-      password: "",
-      username: "",
-      autoReconnect: true,
-      cleanSession: true,
-      enableSslConfig: false,
-      keepAlive: 60,
-      maxBackoffTime: 60,
-      retryCount: 3,
-      jitter: 1,
-    },
-    validationSchema: mqttAdvancedConfigValidation,
-    onSubmit: (values) => {
-      console.log("Form data", values)
-    },
-  })
   return (
     <Screen preset="scroll" contentContainerStyle={themed($screenContentContainer)}>
       <View style={themed($mainContainer)}>
@@ -81,39 +67,31 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
         <View style={themed($formContainer)}>
           <TextField
             keyboardType="default"
-            value={basicFormik.values.clientId}
-            onChangeText={basicFormik.handleChange("clientId")}
+            value={formik.values.clientId}
+            onChangeText={formik.handleChange("clientId")}
             label="Client ID"
             helper={
-              basicFormik.touched.clientId && basicFormik.errors.clientId
-                ? basicFormik.errors.clientId.toString()
+              formik.touched.clientId && formik.errors.clientId
+                ? formik.errors.clientId.toString()
                 : ""
             }
-            status={basicFormik.errors.clientId ? "error" : undefined}
+            status={formik.errors.clientId ? "error" : undefined}
           />
           <TextField
             keyboardType="default"
-            value={basicFormik.values.host}
-            onChangeText={basicFormik.handleChange("host")}
-            label="Client ID"
-            helper={
-              basicFormik.touched.host && basicFormik.errors.host
-                ? basicFormik.errors.host.toString()
-                : ""
-            }
-            status={basicFormik.errors.host ? "error" : undefined}
+            value={formik.values.host}
+            onChangeText={formik.handleChange("host")}
+            label="Host/IP"
+            helper={formik.touched.host && formik.errors.host ? formik.errors.host.toString() : ""}
+            status={formik.errors.host ? "error" : undefined}
           />
           <TextField
             keyboardType="numeric"
-            value={basicFormik.values.port.toString()}
-            onChangeText={basicFormik.handleChange("port")}
+            value={formik.values.port.toString()}
+            onChangeText={formik.handleChange("port")}
             label="port"
-            helper={
-              basicFormik.touched.port && basicFormik.errors.port
-                ? basicFormik.errors.port.toString()
-                : ""
-            }
-            status={basicFormik.errors.port ? "error" : undefined}
+            helper={formik.touched.port && formik.errors.port ? formik.errors.port.toString() : ""}
+            status={formik.errors.port ? "error" : undefined}
           />
         </View>
         <View style={themed($advacedToggleContainer)}>
@@ -135,86 +113,86 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
           <View style={themed($formContainer)}>
             <TextField
               keyboardType="default"
-              value={advanceFormik.values.password}
-              onChangeText={advanceFormik.handleChange("password")}
+              value={formik.values.option.password}
+              onChangeText={formik.handleChange("password")}
               label="mqtt cleint password"
               helper={
-                advanceFormik.touched.password && advanceFormik.errors.password
-                  ? advanceFormik.errors.password.toString()
+                formik.touched.option?.password && formik.errors.option?.password
+                  ? formik.errors.option.password.toString()
                   : ""
               }
-              status={advanceFormik.errors.password ? "error" : undefined}
+              status={formik.errors.option?.password ? "error" : undefined}
             />
             <TextField
               keyboardType="default"
-              value={advanceFormik.values.username}
-              onChangeText={advanceFormik.handleChange("username")}
+              value={formik.values.option.username}
+              onChangeText={formik.handleChange("option.username")}
               label="mqtt cleint username"
               helper={
-                advanceFormik.touched.username && advanceFormik.errors.username
-                  ? advanceFormik.errors.username.toString()
+                formik.touched.option?.username && formik.errors.option?.username
+                  ? formik.errors.option?.username.toString()
                   : ""
               }
-              status={advanceFormik.errors.username ? "error" : undefined}
+              status={formik.errors.option?.username ? "error" : undefined}
             />
             <Switch
-              value={advanceFormik.values.enableSslConfig}
-              onValueChange={(value) => void advanceFormik.setFieldValue("enableSslConfig", value)}
+              value={formik.values.option.enableSslConfig}
+              onValueChange={(value) => void formik.setFieldValue("option.enableSslConfig", value)}
               label="enable ssl config"
               labelPosition="left"
               inputInnerStyle={{ backgroundColor: colors.tint }}
               editable={true}
             />
             <Switch
-              value={advanceFormik.values.autoReconnect}
-              onValueChange={(value) => void advanceFormik.setFieldValue("autoReconnect", value)}
+              value={formik.values.option.autoReconnect}
+              onValueChange={(value) => void formik.setFieldValue("option.autoReconnect", value)}
               label="auto reconnect"
               labelPosition="left"
               inputInnerStyle={{ backgroundColor: colors.tint }}
               editable={true}
             />
             <Switch
-              value={advanceFormik.values.cleanSession}
-              onValueChange={(value) => void advanceFormik.setFieldValue("cleanSession", value)}
+              value={formik.values.option.cleanSession}
+              onValueChange={(value) => void formik.setFieldValue("option.cleanSession", value)}
               label="clean session"
               labelPosition="left"
               inputInnerStyle={{ backgroundColor: colors.tint }}
             />
             <TextField
               keyboardType="numeric"
-              value={advanceFormik.values.maxBackoffTime.toString()}
-              onChangeText={advanceFormik.handleChange("maxBackoffTime")}
+              value={formik.values.option.maxBackoffTime.toString()}
+              onChangeText={formik.handleChange("option.maxBackoffTime")}
               label="maxBackoffTime"
               helper={
-                advanceFormik.touched.maxBackoffTime && advanceFormik.errors.maxBackoffTime
-                  ? advanceFormik.errors.maxBackoffTime.toString()
+                formik.touched.option?.maxBackoffTime && formik.errors.option?.maxBackoffTime
+                  ? formik.errors.option.maxBackoffTime.toString()
                   : ""
               }
-              status={advanceFormik.errors.maxBackoffTime ? "error" : undefined}
+              status={formik.errors.option?.maxBackoffTime ? "error" : undefined}
             />
             <TextField
               keyboardType="numeric"
-              value={advanceFormik.values.retryCount.toString()}
-              onChangeText={advanceFormik.handleChange("retryCount")}
+              value={formik.values.option.retryCount.toString()}
+              onChangeText={formik.handleChange("option.retryCount")}
               label="retryCount"
               helper={
-                advanceFormik.touched.retryCount && advanceFormik.errors.retryCount
-                  ? advanceFormik.errors.retryCount.toString()
+                formik.touched.option?.retryCount && formik.errors.option?.retryCount
+                  ? formik.errors.option.retryCount.toString()
                   : ""
               }
-              status={advanceFormik.errors.retryCount ? "error" : undefined}
+              status={formik.errors.option?.retryCount ? "error" : undefined}
             />
             <TextField
               keyboardType="numeric"
-              value={advanceFormik.values.jitter.toString()}
-              onChangeText={advanceFormik.handleChange("jitter")}
+              value={formik.values.option.jitter.toString()}
+              onChangeText={formik.handleChange("option.jitter")}
               label="jitter"
               helper={
-                advanceFormik.touched.jitter && advanceFormik.errors.jitter
-                  ? advanceFormik.errors.jitter.toString()
+                formik.touched.option?.jitter && formik.errors.option?.jitter
+                  ? formik.errors.option.jitter.toString()
                   : ""
               }
-              status={advanceFormik.errors.jitter ? "error" : undefined}
+              status={formik.errors.option?.jitter ? "error" : undefined}
             />
           </View>
         ) : null}
@@ -223,6 +201,7 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
           preset="filled"
           style={{ borderRadius: 24 }}
           textStyle={{ fontSize: 20, color: colors.tint }}
+          onPress={() => formik.handleSubmit()}
         />
       </View>
     </Screen>
