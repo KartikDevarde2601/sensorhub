@@ -164,7 +164,7 @@ export const MqttStore = types
         return
       }
       const subscription: Subscription = self.client.subscribe({
-        topic: "sample_topic",
+        topic: topic.topicName,
         qos: MqttQos.AT_LEAST_ONCE,
         onSuccess: (ack) => {
           topic.updateSubcriptionStats()
