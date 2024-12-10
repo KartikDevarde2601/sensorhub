@@ -13,38 +13,36 @@ export const DeviceModel = types
     name: types.string,
     createdAt: types.optional(types.Date, () => new Date()),
     topics: types.optional(types.array(TopicModel), []),
-     sessions: types.optional(types.number, 0),
+    sessions: types.optional(types.number, 0),
   })
   .actions(withSetPropAction)
   .views((self) => ({
     get numTopics() {
       return self.topics.length
     },
-   
+
     get topicsForList() {
       return self.topics
-    }
+    },
   }))
   .actions((self) => ({
     addTopic(name: string) {
       const newTopic = TopicModel.create({ id: uuid.v4(), topicName: name })
       self.topics.push(newTopic)
     },
-    IncreseSession(deviceId:string) {
-      if(deviceId == self.id){
+    IncreseSession(deviceId: string) {
+      if (deviceId == self.id) {
         self.sessions += 1
       }
-    
     },
-    DecreseSession(deviceId:string) {
-      if(deviceId == self.id){
+    DecreseSession(deviceId: string) {
+      if (deviceId == self.id) {
         self.sessions -= 1
       }
     },
     deleteTopic(topic: Instance<typeof TopicModel>) {
       self.topics.remove(topic)
-    }
-    
+    },
   }))
 
 export interface Device extends Instance<typeof DeviceModel> {}

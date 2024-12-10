@@ -34,9 +34,6 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
   // Pull in one of our MST stores
   const { mqtt } = useStores()
 
-  console.log(mqtt)
-  console.log(mqtt.client)
-
   const [EnableadvancedConfig, setEnableadvancedConfig] = useState(false)
 
   // Pull in navigation via hook
@@ -103,7 +100,6 @@ export const SettingScreen: FC<SettingScreenProps> = observer(function SettingSc
             value={EnableadvancedConfig}
             onValueChange={(value) => {
               setEnableadvancedConfig(value)
-              console.log("value", value)
             }}
             editable={true}
             inputInnerStyle={{ backgroundColor: colors.tint }}

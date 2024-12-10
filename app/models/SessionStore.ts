@@ -17,7 +17,7 @@ export const SessionStoreModel = types
     get sessionsForList() {
       return self.sessions
     },
-  })) 
+  }))
   .actions((self) => ({
     addSession(name: string, device: Device, description: string) {
       const newSession = SessionModel.create({
@@ -25,15 +25,15 @@ export const SessionStoreModel = types
         sessionName: name,
         description: description,
         device: device, // Explicitly set the device reference
-      });
-       
-      device.IncreseSession(device.id);
-      self.sessions.push(newSession);
+      })
+
+      device.IncreseSession(device.id)
+      self.sessions.push(newSession)
     },
     getSessionById(id: string) {
       return self.sessions.find((session) => session.id === id)
-    }
-  })) 
+    },
+  }))
 
 export interface SessionStore extends Instance<typeof SessionStoreModel> {}
 export interface SessionStoreSnapshotOut extends SnapshotOut<typeof SessionStoreModel> {}

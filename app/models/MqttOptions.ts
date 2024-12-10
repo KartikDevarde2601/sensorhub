@@ -25,7 +25,8 @@ export const MqttOptionsModel = types
       Object.keys(data).forEach((key) => {
         ;(self as any)[key as keyof MqttOptions] = data[key as keyof MqttOptions]
       })
-    },  }))
+    },
+  }))
 
 export interface MqttOptions extends Instance<typeof MqttOptionsModel> {}
 export interface MqttOptionsSnapshotOut extends SnapshotOut<typeof MqttOptionsModel> {}

@@ -152,7 +152,6 @@ export const AddDeviceScreen: FC<AddDeviceScreenProps> = observer(function AddDe
 })
 
 const TopicItem: FC<TopicItemProps> = observer(function TopicItem({ topic }) {
-  console.log("topic", topic)
   return (
     <ListItem
       style={$itemContainer}

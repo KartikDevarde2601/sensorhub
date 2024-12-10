@@ -10,7 +10,7 @@ export const SessionModel = types
   .props({
     id: types.identifier,
     sessionName: types.string,
-    description : types.string,
+    description: types.string,
     createdAt: types.optional(types.Date, () => new Date()),
     device: types.late((): any => types.reference(DeviceModel)),
   })
@@ -19,23 +19,23 @@ export const SessionModel = types
     get deviceName() {
       return self.device.name
     },
-    get deviceTopicsNumber(){
+    get deviceTopicsNumber() {
       return self.device.numTopics
     },
-    get deviceTopics(){
+    get deviceTopics() {
       return self.device.topics
     },
-    get deviceTopicLength(){
+    get deviceTopicLength() {
       return self.device.topics.length
-    }
-  })) 
+    },
+  }))
   .actions((self) => ({
-   updateSession(sessionName: string, description: string, device: Device) {
-    self.sessionName = sessionName;
-    self.description = description;
-    self.device = device;
-   },
-  })) 
+    updateSession(sessionName: string, description: string, device: Device) {
+      self.sessionName = sessionName
+      self.description = description
+      self.device = device
+    },
+  }))
 
 export interface Session extends Instance<typeof SessionModel> {}
 export interface SessionSnapshotOut extends SnapshotOut<typeof SessionModel> {}

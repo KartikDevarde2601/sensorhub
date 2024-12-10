@@ -12,7 +12,7 @@ import {
   EmptyState,
   Button,
   Card,
-  Switch,
+  Radio,
 } from "@/components"
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native"
 import { useStores } from "@/models"
@@ -21,6 +21,7 @@ import { useAppTheme } from "@/utils/useAppTheme"
 import { ThemedStyle } from "@/theme"
 import { $styles } from "../theme"
 import { ContentStyle } from "@shopify/flash-list"
+import { useEventListeners } from "@/hooks/useEventListernMqtt"
 
 interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"> {}
 
@@ -28,7 +29,6 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
   function DataCollectionScreen() {
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
     const { sessions, mqtt } = useStores()
-    console.log("mqtt_client", mqtt.client)
     const [session, setSession] = useState<Session | null>(null)
     // Pull in navigation via hook
     const navigation = useNavigation()
@@ -42,37 +42,47 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
       }
     }, [route.params?.session_id])
 
+    useEffect(() => {
+      return () => {
+        if (session?.deviceTopics) {
+          session.deviceTopics.forEach((topic: Topic) => {
+            mqtt.unsubscribe(topic)
+            console.log(`Unsubscribed from topic: ${topic}`)
+          })
+        }
+      }
+    }, [session])
+
+    if (mqtt.client) {
+      useEventListeners(mqtt.client)
+      console.log("MQTT Event Listener")
+    } else {
+      console.log("MQTT client not connected")
+    }
+
     const {
       themed,
       theme: { colors },
     } = useAppTheme()
 
-    const TopicItem: FC<{ topic: Topic; onPress: () => void }> = ({ topic, onPress }) => {
+    const TopicItem: FC<{ topic: Topic; onPress: () => void }> = observer(({ topic, onPress }) => {
       return (
         <Card
           style={themed($item)}
           LeftComponent={
             <View style={$iconContainer}>
-              <Icon icon="sensorIndicators" size={36} color={colors.tint} />
+              <Icon
+                icon={topic.Issubscribed ? "sensor" : "sensorIndicators"}
+                size={36}
+                color={colors.tint}
+              />
             </View>
           }
           RightComponent={
-            <View style={themed($switchContainer)}>
-              <Switch
-                value={topic.isMessageDisplay}
-                editable={true}
-                label="Display"
-                labelPosition="left"
-                containerStyle={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-              />
-              <Switch
-                value={topic.isMessageDisplay}
-                editable={false}
-                label="Subcribe"
-                labelPosition="left"
-                containerStyle={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-              />
-            </View>
+            <Radio
+              value={topic.isMessageDisplay}
+              onValueChange={() => topic.updateMessageDisplay()}
+            />
           }
           heading={topic.topicName}
           ContentComponent={
@@ -83,6 +93,40 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
           }
         />
       )
+    })
+
+    const handleConnection = () => {
+      if (!mqtt.client) {
+        console.log("MQTT client not connected")
+        return
+      }
+      mqtt.client.connect()
+    }
+
+    const handleSubscibeTopic = () => {
+      if (!mqtt.client) {
+        console.log("MQTT client not connected")
+        return
+      }
+      const topices = session?.deviceTopics.slice() as Topic[]
+      if (topices.length > 0) {
+        topices.forEach((topic) => {
+          mqtt.subscribe(topic)
+        })
+      }
+    }
+
+    const handleUnSubscibeTopic = () => {
+      if (!mqtt.client) {
+        console.log("MQTT client not connected")
+        return
+      }
+      const topices = session?.deviceTopics.slice() as Topic[]
+      if (topices.length > 0) {
+        topices.forEach((topic) => {
+          mqtt.unsubscribe(topic)
+        })
+      }
     }
 
     return (
@@ -91,9 +135,16 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
         contentContainerStyle={themed([$screenContentContainer, $styles.flex1])}
       >
         <View style={themed($topContainer)}>
-          <Icon icon="mqtt" color="green" size={36} />
-          <Icon icon="sensor" color="green" size={36} />
+          <Icon
+            icon="mqtt"
+            color={mqtt.isconnected ? colors.palette.angry100 : colors.palette.angry500}
+            size={36}
+          />
           <Timer />
+        </View>
+        <View style={themed($statusContainer)}>
+          <Text text="status:" preset="subheading" />
+          <Text text={mqtt.status} />
         </View>
         <ListView
           contentContainerStyle={themed($listContentContainer)}
@@ -108,20 +159,19 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
               content="Add a new device to get started Click Right Bottom Button"
             />
           }
-          ListHeaderComponent={
-            <View style={themed($heading)}>
-              <Text text="Sensors" preset="heading" />
-            </View>
-          }
           renderItem={({ item }) => (
             <TopicItem topic={item} onPress={() => console.log("device item")} />
           )}
         />
         <View style={themed($buttonContainer)}>
-          <Button text="connect" style={themed($button)} onPress={() => mqtt.client?.connect()} />
+          <Button text="connect" style={themed($button)} onPress={() => handleConnection()} />
           <Button text="start" style={themed($button)} />
-          <Button text="subscribe" style={themed($button)} />
-          <Button text="complete" style={themed($button)} />
+          <Button text="subscribe" style={themed($button)} onPress={() => handleSubscibeTopic()} />
+          <Button
+            text="unsubscribe"
+            style={themed($button)}
+            onPress={() => handleUnSubscibeTopic()}
+          />
         </View>
       </Screen>
     )
@@ -185,12 +235,9 @@ const $item: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
   backgroundColor: colors.palette.neutral100,
 })
 
-const $switchContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  flexDirection: "column",
-  height: 30,
-})
-
-const $rightContainer: ThemedStyle<ViewStyle> = ({}) => ({
-  flexDirection: "column",
+const $statusContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+  flexDirection: "row",
   justifyContent: "space-between",
+  alignItems: "center",
+  marginHorizontal: spacing.xl,
 })

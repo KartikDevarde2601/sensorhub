@@ -1,7 +1,7 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { DeviceModel } from "./Device"
-import {TopicModel,Topic} from "./Topic"
+import { TopicModel, Topic } from "./Topic"
 import uuid from "react-native-uuid"
 import { id } from "date-fns/locale"
 
@@ -18,12 +18,12 @@ export const DeviceStoreModel = types
     get devicesForList() {
       return self.devices
     },
-    getDeviceById(id: string) : Instance<typeof DeviceModel> | undefined {
+    getDeviceById(id: string): Instance<typeof DeviceModel> | undefined {
       return self.devices.find((device) => device.id === id)
-    }
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    addDevice(name: string,topics?:Topic[]): Instance<typeof DeviceModel> {
+    addDevice(name: string, topics?: Topic[]): Instance<typeof DeviceModel> {
       const newDevice = DeviceModel.create({ id: uuid.v4(), name })
       self.devices.push(newDevice)
       return newDevice
