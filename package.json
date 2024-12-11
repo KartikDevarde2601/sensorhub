@@ -32,9 +32,9 @@
     "prettierrc": "prettier --write ."
   },
   "dependencies": {
-    "@d11/react-native-mqtt": "^0.0.3",
     "@expo-google-fonts/space-grotesk": "^0.2.2",
     "@expo/metro-runtime": "~3.2.1",
+    "@ko-developerhong/react-native-mqtt": "^1.0.2",
     "@op-engineering/op-sqlite": "^11.0.2",
     "@react-navigation/bottom-tabs": "^6.3.2",
     "@react-navigation/native": "^6.0.2",

@@ -8,15 +8,15 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 export const MqttOptionsModel = types
   .model("MqttOptions")
   .props({
-    password: types.optional(types.string, ""),
-    enableSslConfig: types.optional(types.boolean, false),
+    clientId: types.optional(types.string, Math.random().toString(36).substring(7)),
     autoReconnect: types.optional(types.boolean, true),
-    maxBackoffTime: types.optional(types.number, 60),
     retryCount: types.optional(types.number, 3),
     cleanSession: types.optional(types.boolean, true),
     keepAlive: types.optional(types.number, 60),
-    jitter: types.optional(types.number, 1),
+    protocol: types.optional(types.string, "mqtt"),
+    maxInFlightMessages: types.optional(types.number, 1),
     username: types.optional(types.string, ""),
+    password: types.optional(types.string, ""),
   })
   .actions(withSetPropAction)
   .views((self) => ({}))

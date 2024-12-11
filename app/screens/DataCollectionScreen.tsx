@@ -21,7 +21,6 @@ import { useAppTheme } from "@/utils/useAppTheme"
 import { ThemedStyle } from "@/theme"
 import { $styles } from "../theme"
 import { ContentStyle } from "@shopify/flash-list"
-import { useEventListeners } from "@/hooks/useEventListernMqtt"
 
 interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"> {}
 
@@ -37,6 +36,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
       if (route.params?.session_id) {
         const session = sessions.getSessionById(route.params.session_id)
         if (session) {
+          mqtt.replaceTopic(session.deviceTopics)
           setSession(session)
         }
       }
@@ -44,21 +44,9 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
 
     useEffect(() => {
       return () => {
-        if (session?.deviceTopics) {
-          session.deviceTopics.forEach((topic: Topic) => {
-            mqtt.unsubscribe(topic)
-            console.log(`Unsubscribed from topic: ${topic}`)
-          })
-        }
+        mqtt.unsubscribe()
       }
     }, [session])
-
-    if (mqtt.client) {
-      useEventListeners(mqtt.client)
-      console.log("MQTT Event Listener")
-    } else {
-      console.log("MQTT client not connected")
-    }
 
     const {
       themed,
@@ -95,40 +83,6 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
       )
     })
 
-    const handleConnection = () => {
-      if (!mqtt.client) {
-        console.log("MQTT client not connected")
-        return
-      }
-      mqtt.client.connect()
-    }
-
-    const handleSubscibeTopic = () => {
-      if (!mqtt.client) {
-        console.log("MQTT client not connected")
-        return
-      }
-      const topices = session?.deviceTopics.slice() as Topic[]
-      if (topices.length > 0) {
-        topices.forEach((topic) => {
-          mqtt.subscribe(topic)
-        })
-      }
-    }
-
-    const handleUnSubscibeTopic = () => {
-      if (!mqtt.client) {
-        console.log("MQTT client not connected")
-        return
-      }
-      const topices = session?.deviceTopics.slice() as Topic[]
-      if (topices.length > 0) {
-        topices.forEach((topic) => {
-          mqtt.unsubscribe(topic)
-        })
-      }
-    }
-
     return (
       <Screen
         preset="fixed"
@@ -164,14 +118,10 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
           )}
         />
         <View style={themed($buttonContainer)}>
-          <Button text="connect" style={themed($button)} onPress={() => handleConnection()} />
-          <Button text="start" style={themed($button)} />
-          <Button text="subscribe" style={themed($button)} onPress={() => handleSubscibeTopic()} />
-          <Button
-            text="unsubscribe"
-            style={themed($button)}
-            onPress={() => handleUnSubscibeTopic()}
-          />
+          <Button text="connect" style={themed($button)} onPress={() => mqtt.connect()} />
+          <Button text="start" style={themed($button)} onPress={() => console.log("start")} />
+          <Button text="subscribe" style={themed($button)} onPress={() => mqtt.subscribe()} />
+          <Button text="unsubscribe" style={themed($button)} onPress={() => mqtt.unsubscribe()} />
         </View>
       </Screen>
     )

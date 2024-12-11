@@ -1,9 +1,10 @@
 import { types, flow, Instance, destroy, SnapshotOut, SnapshotIn } from "mobx-state-tree"
-import { createMqttClient, MqttConfig, SubscribeMqtt } from "@d11/react-native-mqtt"
-import { MqttClient } from "@d11/react-native-mqtt/dist/Mqtt/MqttClient"
 import { MqttOptionsModel } from "./MqttOptions"
-import { useEventListeners } from "../hooks/useEventListernMqtt"
-import { Topic } from "./Topic"
+import { Topic, TopicModel } from "./Topic"
+import MqttClient, { ConnectionOptions, ClientEvent } from "@ko-developerhong/react-native-mqtt"
+import { connect } from "formik"
+import { add, sub } from "date-fns"
+import { remove } from "@/utils/storage"
 
 // Enum for connection status
 export enum ConnectionStatus {
@@ -22,10 +23,6 @@ export enum MqttQos {
   EXACTLY_ONCE = 2,
 }
 
-interface Subscription {
-  remove: () => void
-}
-
 // MQTT Store Model
 export const MqttStore = types
   .model("MqttStore")
@@ -40,185 +37,79 @@ export const MqttStore = types
       ConnectionStatus.IDLE,
     ),
     errorMessage: types.maybeNull(types.string),
+    topics: types.map(TopicModel),
   })
-  .volatile((self) => ({
-    client: null as MqttClient | null,
-    topicSubscribed: new Map<string, Subscription>(),
-  }))
-  .actions((self) => {
-    const initializeClient = flow(function* () {
-      if (self.client) {
-        return self.client
-      }
 
-      // Prevent multiple initializations
-      if (self.status === ConnectionStatus.INITIALIZING) {
+  .actions((self) => ({
+    connect: flow(function* connect() {
+      self.status = ConnectionStatus.CONNECTING
+      if (self.host === "" && self.clientId === "") {
+        self.status = ConnectionStatus.ERROR
+        self.errorMessage = "Host and Client ID cannot be empty"
+        console.log("Host and Client ID cannot be empty")
         return
       }
+      yield MqttClient.connect(
+        `${self.options.protocol}://${self.host}`,
+        self.options as ConnectionOptions,
+      )
+        .then(() => {
+          MqttClient.on(ClientEvent.Connect, () => {
+            self.status = ConnectionStatus.CONNECTED
+            self.isconnected = true
+          })
 
-      if (self.clientId === "" || self.host === "") {
-        self.status = ConnectionStatus.ERROR
-        self.errorMessage = "Client ID and host are required"
-        return
-      }
+          MqttClient.on(ClientEvent.Disconnect, (cause) => {
+            self.status = ConnectionStatus.DISCONNECTED
+            self.isconnected = false
+            self.errorMessage = cause
+          })
 
-      try {
-        // Update status to initializing
-        self.status = ConnectionStatus.INITIALIZING
+          MqttClient.on(ClientEvent.Error, (error) => {
+            self.status = ConnectionStatus.ERROR
+            self.errorMessage = (error as unknown as Error).message
+          })
 
-        // Configuration for MQTT client
-        const config: MqttConfig = {
-          clientId: self.clientId,
-          host: self.host,
-          port: self.port,
-          options: self.options,
-        }
+          MqttClient.on(ClientEvent.Message, (topic, message) => {
+            const topicObj = self.topics.get(topic.toString())
+            if (topicObj) {
+              topicObj.addMessage(message.toString())
+            }
+          })
+        })
+        .catch((error) => {
+          self.status = ConnectionStatus.ERROR
+          self.errorMessage = error.message
+        })
+    }),
 
-        // Create client (assuming createMqttClient might return a promise)
-        self.client = yield createMqttClient(config)
-
-        // Update status
-        self.status = ConnectionStatus.DISCONNECTED
-
-        return self.client
-      } catch (error) {
-        // Handle initialization error
-        self.status = ConnectionStatus.ERROR
-        self.errorMessage =
-          error instanceof Error ? error.message : "Failed to initialize MQTT client"
-
-        throw error
-      }
-    })
-
-    const connect = flow(function* (): Generator<any, void, any> {
-      if (!self.client) {
-        return
-      }
-
-      try {
-        // Update status to connecting
-        self.status = ConnectionStatus.CONNECTING
-
-        // Connect the client
-        yield self.client.connect()
-
-        // Update status to connected
-        self.status = ConnectionStatus.CONNECTED
-      } catch (error) {
-        self.status = ConnectionStatus.ERROR
-        self.errorMessage = error instanceof Error ? error.message : "Connection failed"
-      }
-    })
-
-    const disconnect = flow(function* () {
-      if (!self.client) {
-        return
-      }
-
-      try {
-        // Disconnect the client
-        self.client.disconnect()
-
-        // Reset status
-        self.status = ConnectionStatus.DISCONNECTED
-      } catch (error) {
-        self.status = ConnectionStatus.ERROR
-        self.errorMessage = error instanceof Error ? error.message : "Disconnect failed"
-      }
-    })
-
-    const cleanup = () => {
-      // Disconnect and remove client
-      if (self.client) {
-        try {
-          self.client.disconnect()
-          self.client.remove()
-          console.log("MQTT client removed")
-        } catch (error) {
-          console.error("Error during MQTT cleanup:", error)
-        }
-
-        // Clear client reference
-        self.client = null
-      }
-
-      // Reset store state
-      self.status = ConnectionStatus.IDLE
-    }
-
-    const editConfig = (data: Partial<MqttConfig>) => {
-      Object.keys(data).forEach((key) => {
-        ;(self as any)[key] = data[key as keyof MqttConfig]
+    replaceTopic(topics: Topic[]) {
+      self.topics.clear()
+      topics.forEach((topic) => {
+        self.topics.set(topic.topicName, topic)
       })
+    },
 
-      cleanup()
-      console.log("MQTT client Cleanup")
-      initializeClient()
-
-      console.log("MQTT client Reinitialized")
-    }
-
-    const subscribe = (topic: Topic) => {
-      if (!self.client) {
-        return
-      }
-      const subscription: Subscription = self.client.subscribe({
-        topic: topic.topicName,
-        qos: MqttQos.AT_LEAST_ONCE,
-        onSuccess: (ack) => {
+    subscribe() {
+      if (self.isconnected) {
+        self.topics.forEach((topic) => {
+          const topicName = topic.getTopicName()
+          MqttClient.subscribe(topicName, MqttQos.AT_LEAST_ONCE)
           topic.updateSubcriptionStats()
-          console.log(`MQTT Subscription Success: ${ack}`)
-        },
-        onError: (error) => {
-          console.error(`MQTT Subscription Error: ${error}`)
-          topic.addError(error.errorMessage)
-        },
-        onEvent: ({ payload }) => {
-          console.log(`MQTT Subscription data: ${payload}`)
-          topic.addMessage(payload)
-        },
-      })
-      self.topicSubscribed.set(topic.id, subscription)
-    }
+        })
+      }
+    },
 
-    const unsubscribe = (topic: Topic) => {
-      if (!self.client) {
-        console.log("Client not initialized")
-        return
+    unsubscribe() {
+      if (self.isconnected) {
+        self.topics.forEach((topic) => {
+          const topicName = topic.getTopicName()
+          MqttClient.unsubscribe([topicName])
+          topic.updateSubcriptionStats()
+        })
       }
-      const subscription = self.topicSubscribed.get(topic.id)
-      console.log("Unsubscribing using Subscription: ", subscription)
-      if (subscription) {
-        subscription.remove()
-        self.topicSubscribed.delete(topic.id)
-        topic.updateSubcriptionStats()
-        console.log(`Unsubscribed from topic: ${topic.topicName} with ID: ${topic.id}`)
-      } else {
-        console.log(`No subscription found for topic ID: ${topic.id}`)
-      }
-    }
-
-    const updateIsConnected = (isConnected: boolean) => {
-      if (isConnected) {
-        self.status = ConnectionStatus.CONNECTED
-        self.isconnected = true
-      } else {
-        self.status = ConnectionStatus.DISCONNECTED
-        self.isconnected = false
-      }
-    }
-    return {
-      initializeClient,
-      connect,
-      disconnect,
-      cleanup,
-      editConfig,
-      subscribe,
-      unsubscribe,
-      updateIsConnected,
-    }
-  })
+    },
+  }))
   .views((self) => ({
     get isConnected() {
       return self.status === ConnectionStatus.CONNECTED
