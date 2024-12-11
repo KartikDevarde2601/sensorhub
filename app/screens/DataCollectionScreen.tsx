@@ -30,25 +30,20 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
     const clientInt = async () => {
       console.log("Connecting to MQTT broker")
       try {
-        await MqttClient.connect("mqtt://10.2.216.208:1883", {}).then(() => {
-          console.log("Connected to MQTT broker")
-        })
+        await MqttClient.connect("mqtt://10.2.216.208:1883", {}).then(() => {})
         MqttClient.on(ClientEvent.Connect, () => {
           mqtt.updateStatus(ConnectionStatus.CONNECTED)
           mqtt.updateIsConnected(true)
         })
         MqttClient.on(ClientEvent.Error, (error) => {
-          console.error("Connection error: ", error)
           mqtt.updateStatus(ConnectionStatus.ERROR)
           mqtt.updateErrorMessage(error)
         })
         MqttClient.on(ClientEvent.Disconnect, (cause) => {
-          console.log("Disconnected: ", cause)
           mqtt.updateStatus(ConnectionStatus.DISCONNECTED)
           mqtt.updateIsConnected(false)
         })
         MqttClient.on(ClientEvent.Message, (topic, message) => {
-          console.log("Message received: ", topic, message.toString())
           if (session) {
             const topicModel = session.deviceTopics.find((t: Topic) => t.topicName === topic)
             if (topicModel) {
@@ -60,6 +55,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
         subscribe()
       } catch (err) {
         console.error("Connection error: ", err)
+        mqtt.updateStatus(ConnectionStatus.ERROR)
       }
     }
 
@@ -85,7 +81,6 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
 
     const publish = async (topic: string, message: string) => {
       MqttClient.publish(topic, message, 1)
-      console.log(`Published message: ${message} to topic: ${topic}`)
     }
 
     const process = async () => {
@@ -115,7 +110,9 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
 
       return () => {
         console.log("Disconnecting from MQTT broker")
-        handleMQTTCleanup()
+        if (mqtt.isconnected) {
+          handleMQTTCleanup()
+        }
       }
     }, [route.params?.session_id])
 

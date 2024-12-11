@@ -48,7 +48,7 @@ export const MqttStore = types
     },
   }))
   .views((self) => ({
-    get isConnected() {
+    get isMqttStatus() {
       return self.status === ConnectionStatus.CONNECTED
     },
   }))

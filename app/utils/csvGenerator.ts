@@ -48,9 +48,6 @@ const create_csv_andSave = async (
 
   if (data.length > 0) {
     const csvContent = jsonToCSV(data)
-
-    console.log("Generated CSV Content:", csvContent)
-
     try {
       // Request directory permissions from the user
       const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()
