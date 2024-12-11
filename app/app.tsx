@@ -20,7 +20,7 @@ import "./utils/gestureHandler"
 import { initI18n } from "./i18n"
 import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import * as Linking from "expo-linking"
 import { useInitialRootStore } from "./models"
@@ -31,7 +31,8 @@ import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { loadDateFnsLocale } from "./utils/formatDate"
-import { useStores } from "./models"
+import Toast from "react-native-toast-message"
+import { DatabaseService } from "./op-sql/databaseRepository"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -76,11 +77,29 @@ function App(props: AppProps) {
   const [areFontsLoaded, fontLoadError] = useFonts(customFontsToLoad)
   const [isI18nInitialized, setIsI18nInitialized] = useState(false)
 
+  const dbService = useMemo(() => DatabaseService.getInstance(), [])
+
   useEffect(() => {
     initI18n()
       .then(() => setIsI18nInitialized(true))
       .then(() => loadDateFnsLocale())
   }, [])
+
+  useEffect(() => {
+    try {
+      dbService.initDatabase()
+    } catch (error) {
+      console.error("Failed to initialize database:", error)
+    }
+
+    return () => {
+      try {
+        dbService.close()
+      } catch (error) {
+        console.error("Failed to close database:", error)
+      }
+    }
+  }, [dbService])
 
   const { rehydrated } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
@@ -122,6 +141,7 @@ function App(props: AppProps) {
             initialState={initialNavigationState}
             onStateChange={onNavigationStateChange}
           />
+          <Toast />
         </KeyboardProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

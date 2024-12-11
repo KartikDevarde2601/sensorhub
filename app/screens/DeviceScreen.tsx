@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, useEffect, useMemo } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View, TextStyle } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
@@ -22,6 +22,7 @@ import { Topic } from "@/models/Topic"
 import { $styles } from "../theme"
 import { Device } from "@/models/Device"
 import { type ContentStyle } from "@shopify/flash-list"
+import { DatabaseService } from "@/op-sql/databaseRepository"
 
 interface DeviceScreenProps extends BottomNavigatorProps<"Device"> {}
 
@@ -36,6 +37,8 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
   const [isModalVisible, setModalVisible] = useState(false)
   const [deviceName, setDeviceName] = useState("")
 
+  const dbService = useMemo(() => DatabaseService.getInstance(), [])
+
   const handleSaveDevice = () => {
     if (!deviceName) {
       return
@@ -43,6 +46,27 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
     devices.addDevice(deviceName)
     setModalVisible(false)
   }
+
+  useEffect(() => {
+    const query = `
+        SELECT 
+            id AS id_sensor_type,
+            time AS time_sensor_type,
+            session_name,
+            MAX(CASE WHEN sensor_type = 'bia/phaseangle' THEN data END) AS data_bia_phaseangle,
+            MAX(CASE WHEN sensor_type = 'bia/bioimpedance' THEN data END) AS data_bia_bioimpedance
+        FROM 
+            sensor_data
+        GROUP BY 
+            id, time, session_name
+        ORDER BY 
+            id;
+    `
+
+    dbService.executeQuery(query).then((result) => {
+      console.log(result)
+    })
+  }, [])
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>

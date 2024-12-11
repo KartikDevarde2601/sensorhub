@@ -1,26 +1,19 @@
-import { FC, useState, useEffect } from "react"
+import { FC, useState, useEffect, useMemo } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { AppStackScreenProps } from "@/navigators"
-import {
-  Screen,
-  Text,
-  Icon,
-  Timer,
-  ListView,
-  ListItemProps,
-  EmptyState,
-  Button,
-  Card,
-  Radio,
-} from "@/components"
+import { Screen, Text, Icon, Timer, ListView, EmptyState, Button, Card, Radio } from "@/components"
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native"
 import { useStores } from "@/models"
-import { Session, Topic, Device } from "@/models"
+import { Session, Topic } from "@/models"
 import { useAppTheme } from "@/utils/useAppTheme"
 import { ThemedStyle } from "@/theme"
 import { $styles } from "../theme"
 import { ContentStyle } from "@shopify/flash-list"
+import MqttClient, { ConnectionOptions, ClientEvent } from "@ko-developerhong/react-native-mqtt"
+import { ConnectionStatus } from "@/models/Mqtt"
+import { DatabaseService } from "@/op-sql/databaseRepository"
+import { create_csv_andSave } from "@/utils/csvGenerator"
 
 interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"> {}
 
@@ -29,24 +22,102 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
     const { sessions, mqtt } = useStores()
     const [session, setSession] = useState<Session | null>(null)
+    const [command, setCommand] = useState("")
     // Pull in navigation via hook
     const navigation = useNavigation()
+    const dbService = useMemo(() => DatabaseService.getInstance(), [])
+
+    const clientInt = async () => {
+      console.log("Connecting to MQTT broker")
+      try {
+        await MqttClient.connect("mqtt://10.2.216.208:1883", {}).then(() => {
+          console.log("Connected to MQTT broker")
+        })
+        MqttClient.on(ClientEvent.Connect, () => {
+          mqtt.updateStatus(ConnectionStatus.CONNECTED)
+          mqtt.updateIsConnected(true)
+        })
+        MqttClient.on(ClientEvent.Error, (error) => {
+          console.error("Connection error: ", error)
+          mqtt.updateStatus(ConnectionStatus.ERROR)
+          mqtt.updateErrorMessage(error)
+        })
+        MqttClient.on(ClientEvent.Disconnect, (cause) => {
+          console.log("Disconnected: ", cause)
+          mqtt.updateStatus(ConnectionStatus.DISCONNECTED)
+          mqtt.updateIsConnected(false)
+        })
+        MqttClient.on(ClientEvent.Message, (topic, message) => {
+          console.log("Message received: ", topic, message.toString())
+          if (session) {
+            const topicModel = session.deviceTopics.find((t: Topic) => t.topicName === topic)
+            if (topicModel) {
+              topicModel.addMessage(message.toString(), session.sessionName)
+            }
+          }
+        })
+
+        subscribe()
+      } catch (err) {
+        console.error("Connection error: ", err)
+      }
+    }
+
+    const subscribe = async () => {
+      if (session) {
+        const topics = session.deviceTopics.slice()
+        topics.forEach((topic: Topic) => {
+          MqttClient.subscribe(topic.topicName, 0)
+          topic.updateSubcriptionStats()
+        })
+      }
+    }
+
+    const unsubscribe = async () => {
+      if (session) {
+        const topics = session.deviceTopics.slice()
+        topics.forEach((topic: Topic) => {
+          MqttClient.unsubscribe([topic.topicName])
+          topic.updateSubcriptionStats()
+        })
+      }
+    }
+
+    const publish = async (topic: string, message: string) => {
+      MqttClient.publish(topic, message, 1)
+      console.log(`Published message: ${message} to topic: ${topic}`)
+    }
+
+    const process = async () => {
+      const topics = session?.deviceTopics.slice().map((topic: Topic) => {
+        return topic.topicName
+      })
+      const session_name = session!!.sessionName
+      await create_csv_andSave(topics, session_name, dbService, navigation)
+    }
+
+    const handleMQTTCleanup = () => {
+      unsubscribe()
+      MqttClient.off(ClientEvent.Connect)
+      MqttClient.off(ClientEvent.Error)
+      MqttClient.off(ClientEvent.Disconnect)
+      MqttClient.disconnect()
+      mqtt.updateIsConnected(false)
+    }
 
     useEffect(() => {
       if (route.params?.session_id) {
         const session = sessions.getSessionById(route.params.session_id)
         if (session) {
-          mqtt.replaceTopic(session.deviceTopics)
           setSession(session)
         }
       }
-    }, [route.params?.session_id])
 
-    useEffect(() => {
       return () => {
-        mqtt.unsubscribe()
+        console.log("Disconnecting from MQTT broker")
+        handleMQTTCleanup()
       }
-    }, [session])
+    }, [route.params?.session_id])
 
     const {
       themed,
@@ -118,10 +189,28 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
           )}
         />
         <View style={themed($buttonContainer)}>
-          <Button text="connect" style={themed($button)} onPress={() => mqtt.connect()} />
-          <Button text="start" style={themed($button)} onPress={() => console.log("start")} />
-          <Button text="subscribe" style={themed($button)} onPress={() => mqtt.subscribe()} />
-          <Button text="unsubscribe" style={themed($button)} onPress={() => mqtt.unsubscribe()} />
+          <Button
+            text="connect"
+            style={themed($button)}
+            onPress={() => clientInt()}
+            disabled={mqtt.isconnected}
+            disabledStyle={{ backgroundColor: colors.tintInactive }}
+          />
+          <Button
+            text="start"
+            style={themed($button)}
+            onPress={() => publish("start", "start")}
+            disabled={!mqtt.isconnected}
+            disabledStyle={{ backgroundColor: colors.tintInactive }}
+          />
+          <Button
+            text="stop"
+            style={themed($button)}
+            onPress={() => publish("stop", "stop")}
+            disabled={!mqtt.isconnected}
+            disabledStyle={{ backgroundColor: colors.tintInactive }}
+          />
+          <Button text="process" style={themed($button)} onPress={() => process()} />
         </View>
       </Screen>
     )
@@ -167,7 +256,7 @@ const $buttonContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
 })
 
 const $button: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  backgroundColor: colors.palette.neutral100,
+  backgroundColor: colors.tint,
   paddingVertical: 10,
   paddingHorizontal: 20,
   borderRadius: 10,

@@ -6,9 +6,9 @@ const en = {
   },
   welcomeScreen: {
     postscript:
-      "psst  — This probably isn't what your app looks like. (Unless your designer handed you these screens, and in that case, ship it!)",
-    readyForLaunch: "Your app, almost ready for launch!",
-    exciting: "(ohh, this is exciting!)",
+      "Subscribe to a topic, log incoming messages, and save the collected data to a CSV file..",
+    readyForLaunch: "MQTT app, Collecting Data From Hardware Device!",
+    exciting: "(Kartik Devarde!)",
   },
   errorScreen: {
     title: "Something went wrong!",

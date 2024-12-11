@@ -1,11 +1,13 @@
 import { getParent, Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { is } from "date-fns/locale"
-import { add, sub } from "date-fns"
+import { sensorRepository } from "../op-sql/sensorRepository"
+import { TABLE } from "@/op-sql/db_table"
 
 /**
  * Model description here for TypeScript hints.
  */
+const sensor = new sensorRepository()
+
 export const TopicModel = types
   .model("Topic")
   .props({
@@ -32,8 +34,16 @@ export const TopicModel = types
     updateMessageDisplay() {
       self.isMessageDisplay = !self.isMessageDisplay
     },
-    addMessage(message: string) {
-      self.message = message
+    addMessage(message: string, sessionName: string) {
+      if (self.isMessageDisplay) {
+        self.message = message
+      }
+      const data = {
+        session_name: sessionName,
+        sensor_type: self.topicName,
+        data: message,
+      }
+      sensor.insertSensordata(data, TABLE.sensor_data)
     },
     addError(error: string) {
       self.error = error

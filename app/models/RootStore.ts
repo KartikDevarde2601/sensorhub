@@ -8,24 +8,17 @@ import { MqttOptionsModel } from "./MqttOptions"
 /**
  * A RootStore model.
  */
-export const RootStoreModel = types
-  .model("RootStore")
-  .props({
-    devices: types.optional(DeviceStoreModel, {}),
-    sessions: types.optional(SessionStoreModel, {}),
-    timer: types.optional(TimerStore, {}),
-    mqtt: types.optional(MqttStore, {
-      clientId: "Mobileclient",
-      host: "10.2.216.208",
-      port: 1883,
-      options: MqttOptionsModel.create({}),
-    }),
-  })
-  .actions((self) => ({
-    async afterCreate() {
-      const result = await self.mqtt.initializeClient()
-    },
-  }))
+export const RootStoreModel = types.model("RootStore").props({
+  devices: types.optional(DeviceStoreModel, {}),
+  sessions: types.optional(SessionStoreModel, {}),
+  timer: types.optional(TimerStore, {}),
+  mqtt: types.optional(MqttStore, {
+    clientId: "Mobileclient",
+    host: "10.2.216.208",
+    port: 1883,
+    options: MqttOptionsModel.create({}),
+  }),
+})
 
 // In your root setup file
 
