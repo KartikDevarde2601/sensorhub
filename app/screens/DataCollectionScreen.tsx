@@ -20,7 +20,7 @@ interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"
 export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
   function DataCollectionScreen() {
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
-    const { sessions, mqtt } = useStores()
+    const { sessions, mqtt, timer } = useStores()
     const [session, setSession] = useState<Session | null>(null)
     const [command, setCommand] = useState("")
     // Pull in navigation via hook
@@ -80,6 +80,14 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
     }
 
     const publish = async (topic: string, message: string) => {
+      if (topic === "start") {
+        timer.start()
+      }
+
+      if (topic === "stop") {
+        timer.stop()
+      }
+
       MqttClient.publish(topic, message, 1)
     }
 
@@ -113,6 +121,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
         if (mqtt.isconnected) {
           handleMQTTCleanup()
         }
+        timer.reset()
       }
     }, [route.params?.session_id])
 
