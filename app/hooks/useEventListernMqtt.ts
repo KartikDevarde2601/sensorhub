@@ -1,5 +1,5 @@
 import * as React from "react"
-import { MqttClient } from "@d11/react-native-mqtt/dist/Mqtt/MqttClient"
+import { MqttClient } from "@kartik2601/rn-mqtt-android/dist/Mqtt/MqttClient"
 import { useStores } from "@/models"
 
 export const useEventListeners = (mqttClient: MqttClient | undefined) => {

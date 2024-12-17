@@ -1,7 +1,9 @@
 import { types, flow, Instance, destroy, SnapshotOut, SnapshotIn } from "mobx-state-tree"
+import { createMqttClient, MqttConfig, SubscribeMqtt } from "@kartik2601/rn-mqtt-android"
+import { MqttClient } from "@kartik2601/rn-mqtt-android/dist/Mqtt/MqttClient"
 import { MqttOptionsModel } from "./MqttOptions"
 import { Topic, TopicModel } from "./Topic"
-import MqttClient, { ConnectionOptions, ClientEvent } from "@ko-developerhong/react-native-mqtt"
+
 import uuid from "react-native-uuid"
 // Enum for connection status
 export enum ConnectionStatus {
