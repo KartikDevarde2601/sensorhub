@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useMemo } from "react"
+import { FC, useState, useEffect, useMemo, useCallback } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { AppStackScreenProps } from "@/navigators"
@@ -10,81 +10,84 @@ import { useAppTheme } from "@/utils/useAppTheme"
 import { ThemedStyle } from "@/theme"
 import { $styles } from "../theme"
 import { ContentStyle } from "@shopify/flash-list"
-import MqttClient, { ConnectionOptions, ClientEvent } from "@ko-developerhong/react-native-mqtt"
-import { ConnectionStatus } from "@/models/Mqtt"
+import { MqttClient } from "@kartik2601/rn-mqtt-android/dist/Mqtt/MqttClient"
 import { DatabaseService } from "@/op-sql/databaseRepository"
 import { create_csv_andSave } from "@/utils/csvGenerator"
+import { useEventListeners } from "@/hooks/useEventListernMqtt"
 
 interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"> {}
 
 export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
   function DataCollectionScreen() {
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
-    const { sessions, mqtt } = useStores()
+    const { sessions, mqtt, timer } = useStores()
     const [session, setSession] = useState<Session | null>(null)
-    const [command, setCommand] = useState("")
     // Pull in navigation via hook
     const navigation = useNavigation()
     const dbService = useMemo(() => DatabaseService.getInstance(), [])
 
-    const clientInt = async () => {
-      console.log("Connecting to MQTT broker")
-      try {
-        await MqttClient.connect("mqtt://10.2.216.208:1883", {}).then(() => {
-          console.log("Connected to MQTT broker")
-        })
-        MqttClient.on(ClientEvent.Connect, () => {
-          mqtt.updateStatus(ConnectionStatus.CONNECTED)
-          mqtt.updateIsConnected(true)
-        })
-        MqttClient.on(ClientEvent.Error, (error) => {
-          console.error("Connection error: ", error)
-          mqtt.updateStatus(ConnectionStatus.ERROR)
-          mqtt.updateErrorMessage(error)
-        })
-        MqttClient.on(ClientEvent.Disconnect, (cause) => {
-          console.log("Disconnected: ", cause)
-          mqtt.updateStatus(ConnectionStatus.DISCONNECTED)
-          mqtt.updateIsConnected(false)
-        })
-        MqttClient.on(ClientEvent.Message, (topic, message) => {
-          console.log("Message received: ", topic, message.toString())
-          if (session) {
-            const topicModel = session.deviceTopics.find((t: Topic) => t.topicName === topic)
-            if (topicModel) {
-              topicModel.addMessage(message.toString(), session.sessionName)
-            }
-          }
-        })
-
-        subscribe()
-      } catch (err) {
-        console.error("Connection error: ", err)
+    useEffect(() => {
+      if (route.params?.session_id) {
+        const session = sessions.getSessionById(route.params.session_id)
+        if (session) {
+          setSession(session)
+          mqtt.setSessionName(session.sessionName)
+        }
       }
-    }
+    }, [route.params?.session_id])
 
-    const subscribe = async () => {
-      if (session) {
-        const topics = session.deviceTopics.slice()
-        topics.forEach((topic: Topic) => {
-          MqttClient.subscribe(topic.topicName, 0)
-          topic.updateSubcriptionStats()
+    useEffect(() => {
+      return () => {
+        console.log("DataCollectionScreen Unmounted")
+        handleUnSubscibeTopic()
+        if (mqtt.isConnected) {
+          mqtt.disconnect()
+        }
+      }
+    }, [session])
+
+    const handleSubscibeTopic = useCallback(() => {
+      if (!mqtt.client) {
+        console.log("MQTT client not connected")
+        return
+      }
+      const topices = session?.deviceTopics.slice() as Topic[]
+      console.log(topices)
+      if (topices.length > 0) {
+        topices.forEach((topic) => {
+          mqtt.subscribe(topic)
         })
       }
-    }
+    }, [session])
 
-    const unsubscribe = async () => {
-      if (session) {
-        const topics = session.deviceTopics.slice()
-        topics.forEach((topic: Topic) => {
-          MqttClient.unsubscribe([topic.topicName])
-          topic.updateSubcriptionStats()
+    const handleUnSubscibeTopic = useCallback(() => {
+      if (!mqtt.client) {
+        console.log("MQTT client not connected")
+        return
+      }
+      const topices = session?.deviceTopics?.slice() as Topic[] | undefined
+      if (topices && topices.length > 0) {
+        topices.forEach((topic) => {
+          mqtt.unsubscribe(topic)
         })
       }
-    }
+    }, [session])
 
     const publish = async (topic: string, message: string) => {
-      MqttClient.publish(topic, message, 1)
+      const paylaod = {
+        topic: topic,
+        payload: message,
+      }
+      mqtt.client?.publish(paylaod).then((ack) => {
+        if (topic === "start") {
+          timer.start()
+        }
+
+        if (topic === "stop") {
+          timer.stop()
+        }
+      })
+
       console.log(`Published message: ${message} to topic: ${topic}`)
     }
 
@@ -95,29 +98,12 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
       const session_name = session!!.sessionName
       await create_csv_andSave(topics, session_name, dbService, navigation)
     }
-
-    const handleMQTTCleanup = () => {
-      unsubscribe()
-      MqttClient.off(ClientEvent.Connect)
-      MqttClient.off(ClientEvent.Error)
-      MqttClient.off(ClientEvent.Disconnect)
-      MqttClient.disconnect()
-      mqtt.updateIsConnected(false)
+    if (mqtt.client) {
+      useEventListeners(mqtt.client)
+      console.log("MQTT Event Listener")
+    } else {
+      console.log("MQTT client not connected")
     }
-
-    useEffect(() => {
-      if (route.params?.session_id) {
-        const session = sessions.getSessionById(route.params.session_id)
-        if (session) {
-          setSession(session)
-        }
-      }
-
-      return () => {
-        console.log("Disconnecting from MQTT broker")
-        handleMQTTCleanup()
-      }
-    }, [route.params?.session_id])
 
     const {
       themed,
@@ -134,6 +120,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
                 icon={topic.Issubscribed ? "sensor" : "sensorIndicators"}
                 size={36}
                 color={colors.tint}
+                onPress={() => mqtt.subscribe(topic)}
               />
             </View>
           }
@@ -192,8 +179,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
           <Button
             text="connect"
             style={themed($button)}
-            onPress={() => clientInt()}
-            disabled={mqtt.isconnected}
+            onPress={() => mqtt.connect()}
             disabledStyle={{ backgroundColor: colors.tintInactive }}
           />
           <Button

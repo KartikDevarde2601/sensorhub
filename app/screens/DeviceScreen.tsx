@@ -63,9 +63,9 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
             id;
     `
 
-    dbService.executeQuery(query).then((result) => {
-      console.log(result)
-    })
+    // dbService.executeQuery(query).then((result) => {
+    //   console.log(result)
+    // })
   }, [])
 
   return (
