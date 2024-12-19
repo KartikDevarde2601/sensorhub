@@ -72,7 +72,7 @@ export function Icon(props: IconProps) {
 
   const $imageStyle: StyleProp<ImageStyle> = [
     $imageStyleBase,
-    { tintColor: color ?? theme.colors.text },
+    { tintColor: color },
     size !== undefined && { width: size, height: size },
     $imageStyleOverride,
   ]
@@ -113,6 +113,9 @@ export const iconRegistry = {
   mqtt: require("../../assets/icons/mqtt.png"),
   sensor: require("../../assets/icons/sensor.png"),
   sensorIndicators: require("../../assets/icons/sensorIndicator.png"),
+  closeFile: require("../../assets/icons/closeFile.png"),
+  openFile: require("../../assets/icons/openFile.png"),
+  csv: require("../../assets/icons/csv.png"),
 }
 
 const $imageStyleBase: ImageStyle = {

@@ -160,11 +160,6 @@ const $buttonContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   justifyContent: "space-between",
 })
 
-const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  paddingVertical: spacing.xxl,
-  paddingHorizontal: spacing.md,
-  flex: 1,
-})
 const $button: ThemedStyle<ViewStyle> = () => ({
   borderRadius: 24,
 })
