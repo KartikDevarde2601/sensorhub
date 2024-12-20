@@ -1,8 +1,8 @@
-import { FC } from "react"
+import { FC, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { BottomNavigatorProps } from "@/navigators"
-import { Screen, ListView, EmptyState, ListItem, Icon, Text } from "@/components"
+import { Screen, ListView, EmptyState, FileItem, Text } from "@/components"
 import { $styles } from "../theme"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
@@ -20,35 +20,49 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
   // const navigation = useNavigation()
   const { themed, theme } = useAppTheme()
 
-  let files = [
+  const nodes = [
     {
-      name: "file1",
-      files: [
-        { name: "file11", files: [{ name: "file111" }, { name: "file112" }] },
-        { name: "file12" },
+      name: "Home",
+      nodes: [
+        {
+          name: "Movies",
+          nodes: [
+            {
+              name: "Action",
+              nodes: [
+                {
+                  name: "2000s",
+                  nodes: [{ name: "Gladiator.mp4" }, { name: "The-Dark-Knight.mp4" }],
+                },
+                { name: "2010s", nodes: [] },
+              ],
+            },
+            {
+              name: "Comedy",
+              nodes: [{ name: "2000s", nodes: [{ name: "Superbad.mp4" }] }],
+            },
+            {
+              name: "Drama",
+              nodes: [{ name: "2000s", nodes: [{ name: "American-Beauty.mp4" }] }],
+            },
+          ],
+        },
+        {
+          name: "Music",
+          nodes: [
+            { name: "Rock", nodes: [] },
+            { name: "Classical", nodes: [] },
+          ],
+        },
+        { name: "Pictures", nodes: [] },
+        {
+          name: "Documents",
+          nodes: [],
+        },
+        { name: "passwords.txt" },
       ],
     },
-    { name: "file2" },
-    { name: "file3", files: [{ name: "file31" }, { name: "file32" }] },
-    { name: "file4" },
-    { name: "file5" },
-    { name: "file6" },
-    { name: "file7" },
-    { name: "file8" },
-    { name: "file9" },
-    { name: "file10" },
   ]
-
-  const RenderItem = (item: string, style?: ViewStyle) => {
-    return (
-      <ListItem
-        style={themed([$itemsContainer, style])}
-        text={item}
-        LeftComponent={<Icon icon="closeFile" />}
-        textStyle={{ marginLeft: 16 }}
-      />
-    )
-  }
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
@@ -60,8 +74,8 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
             <Text text="File List" preset="heading" />
           </View>
         }
-        extraData={files.length}
-        data={files}
+        extraData={nodes.length}
+        data={nodes}
         ListEmptyComponent={
           <EmptyState
             preset="generic"
@@ -70,18 +84,7 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
             content="Add a new device to get started Click Right Bottom Button"
           />
         }
-        renderItem={({ item }) => (
-          <View>
-            {RenderItem(item.name)}
-            {item.files && (
-              <ListView
-                estimatedItemSize={130}
-                data={item.files}
-                renderItem={({ item }) => RenderItem(item.name, { marginLeft: 16 })}
-              />
-            )}
-          </View>
-        )}
+        renderItem={({ item }) => <FileItem item={item} />}
       />
     </Screen>
   )
@@ -96,10 +99,6 @@ const $listContentContainer: ThemedStyle<ContentStyle> = ({ spacing }) => ({
 
 const $emptyState: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   marginTop: spacing.xxl,
-})
-
-const $itemsContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  alignItems: "center",
 })
 
 const $heading: ThemedStyle<ViewStyle> = ({ spacing }) => ({
