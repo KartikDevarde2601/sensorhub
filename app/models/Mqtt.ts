@@ -212,6 +212,11 @@ export const MqttStore = types
       return self.status === ConnectionStatus.CONNECTED
     },
   }))
+  .actions((self) => ({
+    afterCreate() {
+      self.initializeClient()
+    },
+  }))
 export interface Mqtt extends Instance<typeof MqttStore> {}
 export interface MqttSnapshotOut extends SnapshotOut<typeof MqttStore> {}
 export interface MqttSnapshotIn extends SnapshotIn<typeof MqttStore> {}

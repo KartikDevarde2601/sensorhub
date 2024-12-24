@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
 import { Icon, ListItem } from "@/components"
-import {Filesystemnode} from '@/models'
+import { Filesystemnode } from "@/models"
 
 export interface FileItemProps {
   item: Filesystemnode
@@ -27,7 +27,7 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
       <ListItem
         style={themed([$itemsContainer, style])}
         text={item.name}
-        onPress={() => }
+        onPress={() => console.log("Pressed")}
         LeftComponent={
           item.nodes ? (
             <View style={themed($LeftComponent)}>

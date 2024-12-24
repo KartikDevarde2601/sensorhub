@@ -23,6 +23,7 @@ import { $styles } from "../theme"
 import { Device } from "@/models/Device"
 import { type ContentStyle } from "@shopify/flash-list"
 import { DatabaseService } from "@/op-sql/databaseRepository"
+import * as FileSystem from "expo-file-system"
 
 interface DeviceScreenProps extends BottomNavigatorProps<"Device"> {}
 
@@ -47,26 +48,14 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
     setModalVisible(false)
   }
 
-  useEffect(() => {
-    const query = `
-        SELECT 
-            id AS id_sensor_type,
-            time AS time_sensor_type,
-            session_name,
-            MAX(CASE WHEN sensor_type = 'bia/phaseangle' THEN data END) AS data_bia_phaseangle,
-            MAX(CASE WHEN sensor_type = 'bia/bioimpedance' THEN data END) AS data_bia_bioimpedance
-        FROM 
-            sensor_data
-        GROUP BY 
-            id, time, session_name
-        ORDER BY 
-            id;
-    `
-
-    // dbService.executeQuery(query).then((result) => {
-    //   console.log(result)
-    // })
-  }, [])
+  const readDirectory = async () => {
+    const baseDirectory = FileSystem.documentDirectory
+    if (baseDirectory) {
+      console.log(baseDirectory)
+      const result = await FileSystem.getInfoAsync(baseDirectory + "Home")
+      console.log(result)
+    }
+  }
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
@@ -104,7 +93,8 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         preset="default"
         style={[$fab, { backgroundColor: theme.colors.palette.primary100 }]}
         pressedStyle={$fabpress}
-        onPress={() => setModalVisible(true)}
+        onPress={() => readDirectory()}
+        // onPress={() => setModalVisible(true)}
       />
       <Modal isopen={isModalVisible} withInput={true}>
         <View style={themed($modalContent)}>

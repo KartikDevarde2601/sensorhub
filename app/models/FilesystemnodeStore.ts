@@ -118,6 +118,20 @@ export const FilesystemnodeStoreModel = types
         throw error
       }
     }),
+    afterCreate: flow(function* () {
+      const basePath = FileSystem.documentDirectory
+      if (basePath) {
+        const result = yield FileSystem.getInfoAsync(basePath + self.rootNode.name)
+        if (!result.exists) {
+          yield FileSystem.makeDirectoryAsync(basePath + self.rootNode.name, {
+            intermediates: true,
+          })
+          self.rootNode.path = basePath + self.rootNode.name
+        } else {
+          self.rootNode.path = result.uri
+        }
+      }
+    }),
   }))
 
 export interface FilesystemnodeStore extends Instance<typeof FilesystemnodeStoreModel> {}
