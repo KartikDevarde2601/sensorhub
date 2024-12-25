@@ -21,7 +21,6 @@ export interface IFileSystemNodeSnapshot {
 export interface IFileSystemNodeActions {
   setPath: (newPath: string) => void
   toggleSelect: () => void
-  toggleExpanded: () => void
   addNode: (nodeData: IFileSystemNodeSnapshot) => Instance<typeof FilesystemnodeModel>
   removeNode: (id: string) => void
   updateName: (newName: string) => void
@@ -48,7 +47,6 @@ export const FilesystemnodeModel = types
     nodes: types.optional(types.array(types.late((): IAnyModelType => FilesystemnodeModel)), []),
     path: types.optional(types.string, ""),
     isSelected: types.optional(types.boolean, false),
-    isExpanded: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .views((self) => ({}))
@@ -64,15 +62,9 @@ export const FilesystemnodeModel = types
     toggleSelect() {
       self.isSelected = !self.isSelected
     },
-    toggleExpanded() {
-      if (self.type === "directory") {
-        self.isExpanded = !self.isExpanded
-      }
-    },
     addNode(nodeData: IFileSystemNodeSnapshot) {
       const newNode: Filesystemnode = FilesystemnodeModel.create({
         ...nodeData,
-        path: `${self.path}/${nodeData.name}`,
       })
       self.nodes.push(newNode)
       return newNode

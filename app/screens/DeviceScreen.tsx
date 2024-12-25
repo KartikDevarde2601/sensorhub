@@ -24,6 +24,7 @@ import { Device } from "@/models/Device"
 import { type ContentStyle } from "@shopify/flash-list"
 import { DatabaseService } from "@/op-sql/databaseRepository"
 import * as FileSystem from "expo-file-system"
+import { jsonToCSV } from "react-native-csv"
 
 interface DeviceScreenProps extends BottomNavigatorProps<"Device"> {}
 
@@ -49,11 +50,27 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
   }
 
   const readDirectory = async () => {
-    const baseDirectory = FileSystem.documentDirectory
-    if (baseDirectory) {
-      console.log(baseDirectory)
-      const result = await FileSystem.getInfoAsync(baseDirectory + "Home")
-      console.log(result)
+    try {
+      const baseDirectory = FileSystem.documentDirectory
+      if (baseDirectory) {
+        const DirctoryPath = baseDirectory + "Home" + "/Kartik"
+        console.log("DirctoryPath", DirctoryPath)
+        // const filePath = DirctoryPath + "/data.csv"
+        // const data = [
+        //   { message: "Hello World kartik", name: "kartik" },
+        //   { message: "Hello World", name: "omkar" },
+        // ]
+        // const csvData = jsonToCSV(data)
+
+        // await FileSystem.writeAsStringAsync(filePath, csvData)
+        const read = await FileSystem.readDirectoryAsync(DirctoryPath)
+        console.log("Directory", read)
+
+        // const fileContent = await FileSystem.readAsStringAsync(filePath)
+        // console.log(fileContent)
+      }
+    } catch (error) {
+      console.log("Error reading directory:", error)
     }
   }
 
@@ -93,8 +110,8 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         preset="default"
         style={[$fab, { backgroundColor: theme.colors.palette.primary100 }]}
         pressedStyle={$fabpress}
-        onPress={() => readDirectory()}
-        // onPress={() => setModalVisible(true)}
+        // onPress={() => readDirectory()}
+        onPress={() => setModalVisible(true)}
       />
       <Modal isopen={isModalVisible} withInput={true}>
         <View style={themed($modalContent)}>

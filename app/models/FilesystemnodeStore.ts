@@ -2,6 +2,7 @@ import { Instance, SnapshotIn, SnapshotOut, types, flow } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { FilesystemnodeModel, IFileSystemNodeActions, FileType } from "./Filesystemnode"
 import * as FileSystem from "expo-file-system"
+const { StorageAccessFramework } = FileSystem
 
 export interface IFileSystemNode
   extends Instance<typeof FilesystemnodeModel>,
@@ -15,8 +16,11 @@ export const FilesystemnodeStoreModel = types
   })
   .actions(withSetPropAction)
   .views((self) => ({
-    getroot(): Array<IFileSystemNode> {
+    get root(): Array<IFileSystemNode> {
       return [self.rootNode]
+    },
+    get rootPath(): string {
+      return self.rootNode.path
     },
   }))
   .actions((self) => ({
@@ -36,7 +40,7 @@ export const FilesystemnodeStoreModel = types
     },
     findNodeByPath(path: string): IFileSystemNode | null {
       const findNode = (node: IFileSystemNode, targetPath: string): IFileSystemNode | null => {
-        if (node.path === targetPath) return node
+        if (node.path.trim() === targetPath.trim()) return node
         for (const childNode of node.nodes) {
           const found = findNode(childNode, targetPath)
           if (found) return found
@@ -48,10 +52,12 @@ export const FilesystemnodeStoreModel = types
   }))
   .actions((self) => ({
     createDirectory: flow(function* (parentPath: string, name: string) {
+      console.log("parentPath", parentPath)
       const parent = self.findNodeByPath(parentPath)
       if (!parent) throw new Error("Parent directory not found")
 
-      const newPath = `${parentPath}/${name}`
+      const newPath = parentPath + "/" + name.trim()
+
       try {
         yield FileSystem.makeDirectoryAsync(newPath, { intermediates: true })
         return parent.addNode({
@@ -70,7 +76,8 @@ export const FilesystemnodeStoreModel = types
       const parent = self.findNodeByPath(parentPath)
       if (!parent) throw new Error("Parent directory not found")
 
-      const newPath = `${parentPath}/${name}`
+      const newPath = parentPath + "/" + `${name}.csv`.trim()
+
       try {
         yield FileSystem.writeAsStringAsync(newPath, content)
         return parent.addNode({

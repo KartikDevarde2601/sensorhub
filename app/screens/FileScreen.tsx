@@ -29,8 +29,8 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
             <Text text="File List" preset="heading" />
           </View>
         }
-        extraData={Filesystem.getroot().length}
-        data={Filesystem.getroot()}
+        extraData={Filesystem.root}
+        data={Filesystem.root}
         ListEmptyComponent={
           <EmptyState
             preset="generic"

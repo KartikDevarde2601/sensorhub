@@ -16,12 +16,12 @@ import {
 } from "@/components"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
-import { FlashList } from "@shopify/flash-list"
 import { useStores } from "@/models"
 import { Topic } from "@/models/Topic"
 import { useEffect } from "react"
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native"
 import { Device } from "@/models"
+import { ContructPath } from "@/utils/fileUtils"
 
 interface AddDeviceScreenProps extends AppStackScreenProps<"AddDevice"> {}
 
@@ -30,7 +30,7 @@ interface TopicItemProps {
 }
 
 export const AddDeviceScreen: FC<AddDeviceScreenProps> = observer(function AddDeviceScreen() {
-  const { devices } = useStores()
+  const { devices, Filesystem } = useStores()
   const route = useRoute<RouteProp<{ AddDevice: { device_id?: string } }, "AddDevice">>()
   const navigation = useNavigation()
   const [device, setDevice] = useState<Device | null>(null)
@@ -45,7 +45,13 @@ export const AddDeviceScreen: FC<AddDeviceScreenProps> = observer(function AddDe
   } = useAppTheme()
 
   const handleSaveDevice = () => {
-    console.log("device saved")
+    if (!device?.name) {
+      return
+    }
+    const path = ContructPath(Filesystem.rootPath)
+    Filesystem.createDirectory(path, device?.name)
+
+    navigation.goBack()
   }
 
   const handleAddTopic = () => {

@@ -19,7 +19,7 @@ interface DataCollectionScreenProps extends AppStackScreenProps<"DataCollection"
 export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
   function DataCollectionScreen() {
     const route = useRoute<RouteProp<{ EditSession: { session_id?: string } }, "EditSession">>()
-    const { sessions, mqtt, timer } = useStores()
+    const { sessions, mqtt, timer, Filesystem } = useStores()
     const [session, setSession] = useState<Session | null>(null)
     // Pull in navigation via hook
     const navigation = useNavigation()
@@ -94,8 +94,9 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
       const topics = session?.deviceTopics.slice().map((topic: Topic) => {
         return topic.topicName
       })
-      const session_name = session!!.sessionName
-      await create_csv_andSave(topics, session_name, dbService, navigation)
+      const sessionName = session!!.sessionName
+      const deviceName = session!!.deviceName
+      await create_csv_andSave(topics, sessionName, deviceName, dbService, navigation, Filesystem)
     }
     if (mqtt.client) {
       useEventListeners(mqtt.client)

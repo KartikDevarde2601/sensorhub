@@ -19,24 +19,23 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
   const { style, item } = props
   const { themed, theme } = useAppTheme()
   const $container = item.nodes ? themed(style) : {}
-
-  const [isOpen, setIsOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   return (
     <View style={themed($container)}>
       <ListItem
         style={themed([$itemsContainer, style])}
         text={item.name}
-        onPress={() => console.log("Pressed")}
+        onPress={() => setIsExpanded(!isExpanded)}
         LeftComponent={
           item.nodes ? (
             <View style={themed($LeftComponent)}>
               <Icon
                 icon="chevronDown"
-                style={isOpen ? { transform: [{ rotate: "-90deg" }] } : {}}
+                style={isExpanded ? { transform: [{ rotate: "-90deg" }] } : {}}
                 size={20}
               />
-              <Icon icon="closeFile" />
+              <Icon icon={isExpanded ? "openFile" : "closeFile"} />
             </View>
           ) : (
             <Icon icon="csv" />
@@ -44,7 +43,7 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
         }
         textStyle={{ marginLeft: theme.spacing.sm }}
       />
-      {isOpen &&
+      {isExpanded &&
         item.nodes?.map((node, index) => (
           <View key={index}>
             <FileItem item={node} style={{ marginLeft: theme.spacing.sm }} />

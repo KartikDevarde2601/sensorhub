@@ -1,8 +1,8 @@
-import { Alert } from "react-native"
 import { jsonToCSV } from "react-native-csv"
-import * as FileSystem from "expo-file-system"
 import Toast from "react-native-toast-message"
 import { DatabaseService } from "../op-sql/databaseRepository"
+import { FilesystemnodeStore } from "@/models"
+import { ContructPath } from "@/utils/fileUtils"
 
 const showToastCSV = () => {
   Toast.show({
@@ -12,78 +12,48 @@ const showToastCSV = () => {
   })
 }
 
+const getQuery = (topic: string, sessionName: string): string => {
+  return `
+    SELECT * FROM sensor_data
+    WHERE session_name = '${sessionName}' AND sensor_type = '${topic}'`
+}
+
 const create_csv_andSave = async (
   topics: string[],
-  session_name: string,
+  sessionName: string,
+  deviceName: string,
   dbservice: DatabaseService,
   navigation: any,
+  FileSystem: FilesystemnodeStore,
 ): Promise<void> => {
   showToastCSV()
+  const parentPath = ContructPath(FileSystem.rootPath, deviceName, sessionName)
+  console.log("parentPath", parentPath)
 
-  const selectClauses = topics
-    .map(
-      (sensorType) =>
-        `MAX(CASE WHEN sensor_type = '${sensorType}' THEN data END) AS data_${sensorType.replace("/", "_")}`,
+  try {
+    await Promise.all(
+      topics.map(async (topic) => {
+        const query = getQuery(topic, sessionName)
+        const results = await dbservice.executeQuery(query)
+        const data = (results as any).rows
+        if (data.length > 0) {
+          const csvContent = jsonToCSV(data)
+          await FileSystem.createFile(parentPath, topic, csvContent)
+        }
+      }),
     )
-    .join(", ")
-
-  const query = `
-    SELECT 
-        id,
-        time,
-        session_name,
-        ${selectClauses}
-    FROM 
-        sensor_data
-    WHERE
-        session_name = '${session_name}'
-    GROUP BY 
-        id, time, session_name
-    ORDER BY 
-        id;
-  `
-
-  const results = await dbservice.executeQuery(query)
-  const data = (results as any).rows
-
-  if (data.length > 0) {
-    const csvContent = jsonToCSV(data)
-
-    console.log("Generated CSV Content:", csvContent)
-
-    try {
-      // Request directory permissions from the user
-      const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()
-      if (!permissions.granted) {
-        Alert.alert("Permission Denied", "External storage access permission is required.")
-        return
-      }
-
-      const directoryUri = permissions.directoryUri
-
-      // Create a file in the selected directory
-      const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
-        directoryUri,
-        `${session_name}.csv`,
-        "text/csv",
-      )
-
-      // Write the CSV content to the created file
-      await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, csvContent, {
-        encoding: FileSystem.EncodingType.UTF8,
-      })
-
-      Alert.alert("Success", `CSV file written to: ${fileUri}`, [
-        { text: "OK", onPress: () => navigation.navigate("Session") },
-      ])
-    } catch (error) {
-      console.error("Error writing CSV to external storage:", error)
-      Alert.alert("Error", "Failed to save CSV file. Please try again.")
-    }
-  } else {
-    Alert.alert("Error", "No data found for CSV generation", [
-      { text: "OK", onPress: () => navigation.navigate("Session") },
-    ])
+    Toast.show({
+      type: "success",
+      text1: "CSV Generation Complete ✅",
+      text2: "CSV files have been generated successfully.",
+    })
+  } catch (error) {
+    console.error("Error generating CSV:", error)
+    Toast.show({
+      type: "error",
+      text1: "CSV Generation Failed ❌",
+      text2: "An error occurred during CSV generation.",
+    })
   }
 }
 

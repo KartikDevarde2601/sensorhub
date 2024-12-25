@@ -25,7 +25,7 @@ import { colors } from "@/theme"
 import { ThemedStyle } from "@/theme"
 import { ContentStyle } from "@shopify/flash-list"
 import { Device } from "@/models"
-import { use } from "i18next"
+import { ContructPath } from "@/utils/fileUtils"
 
 interface SessionScreenProps extends BottomNavigatorProps<"Session"> {}
 interface TopicItemProps {
@@ -34,7 +34,7 @@ interface TopicItemProps {
 
 export const SessionScreen: FC<SessionScreenProps> = observer(function SessionScreen() {
   // Pull in one of our MST stores
-  const { sessions, devices } = useStores()
+  const { sessions, devices, Filesystem } = useStores()
   const [isModalVisible, setModalVisible] = useState(false)
   const [sessionName, setSessionName] = useState("")
   const [description, setDescription] = useState("")
@@ -50,6 +50,8 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
     }
     if (selectedDevice) {
       sessions.addSession(sessionName, selectedDevice, description)
+      const path = ContructPath(Filesystem.rootPath, selectedDevice.name)
+      Filesystem.createDirectory(path, sessionName)
     }
     setModalVisible(false)
   }
