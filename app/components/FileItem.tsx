@@ -1,10 +1,10 @@
 import React, { useState } from "react"
-import { StyleProp, TextStyle, View, ViewStyle } from "react-native"
+import { StyleProp, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
 import { Icon, ListItem } from "@/components"
-import { Filesystemnode } from "@/models"
+import { Filesystemnode, FileType } from "@/models"
 
 export interface FileItemProps {
   item: Filesystemnode
@@ -25,10 +25,10 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
     <View style={themed($container)}>
       <ListItem
         style={themed([$itemsContainer, style])}
-        text={item.name}
+        text={item.type === FileType.Directory ? item.name : item.name + ".csv"}
         onPress={() => setIsExpanded(!isExpanded)}
         LeftComponent={
-          item.nodes ? (
+          item.nodesArray.length > 0 || item.type === FileType.Directory ? (
             <View style={themed($LeftComponent)}>
               <Icon
                 icon="chevronDown"
@@ -44,7 +44,8 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
         textStyle={{ marginLeft: theme.spacing.sm }}
       />
       {isExpanded &&
-        item.nodes?.map((node, index) => (
+        item.nodesArray.length > 0 &&
+        item.nodesArray?.map((node: Filesystemnode, index: number) => (
           <View key={index}>
             <FileItem item={node} style={{ marginLeft: theme.spacing.sm }} />
           </View>

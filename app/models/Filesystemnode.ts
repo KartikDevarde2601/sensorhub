@@ -6,54 +6,26 @@ export enum FileType {
   Directory = "directory",
 }
 
-// Snapshot interface definition (before model creation)
-export interface IFileSystemNodeSnapshot {
-  id?: string
-  name: string
-  type?: FileType
-  nodes?: IFileSystemNodeSnapshot[]
-  path?: string
-  isSelected?: boolean
-  isExpanded?: boolean
-}
-
-// Create a separate actions type
-export interface IFileSystemNodeActions {
-  setPath: (newPath: string) => void
-  toggleSelect: () => void
-  addNode: (nodeData: IFileSystemNodeSnapshot) => Instance<typeof FilesystemnodeModel>
-  removeNode: (id: string) => void
-  updateName: (newName: string) => void
-}
-
-// Helper to generate unique IDs
-const generateId = () => Math.random().toString(36).substr(2, 9)
-
-const hasFileExtension = (name: string): FileType => {
-  const result = /\.[0-9a-z]+$/i.test(name)
-  if (result) {
-    return FileType.File
-  } else {
-    return FileType.Directory
-  }
-}
-
 export const FilesystemnodeModel = types
   .model("Filesystemnode")
   .props({
-    id: types.optional(types.identifier, () => generateId()),
+    id: types.identifier,
     name: types.string,
-    type: types.optional(types.enumeration(Object.values(FileType)), hasFileExtension(self.name)),
-    nodes: types.optional(types.array(types.late((): IAnyModelType => FilesystemnodeModel)), []),
+    type: types.enumeration(Object.values(FileType)),
+    nodes: types.optional(types.map(types.late((): IAnyModelType => FilesystemnodeModel)), {}),
     path: types.optional(types.string, ""),
     isSelected: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
-  .views((self) => ({}))
+  .views((self) => ({
+    get nodesArray() {
+      return Array.from(self.nodes.values())
+    },
+  }))
   .actions((self) => ({
     setPath(newPath: string) {
       self.path = newPath
-      if (self.type === "directory") {
+      if (self.type === FileType.Directory) {
         self.nodes.forEach((node) => {
           node.setPath(`${newPath}/${node.name}`)
         })
@@ -62,28 +34,21 @@ export const FilesystemnodeModel = types
     toggleSelect() {
       self.isSelected = !self.isSelected
     },
-    addNode(nodeData: IFileSystemNodeSnapshot) {
+    addNode(nodeData: FilesystemnodeSnapshotIn) {
       const newNode: Filesystemnode = FilesystemnodeModel.create({
         ...nodeData,
       })
-      self.nodes.push(newNode)
+      self.nodes.set(newNode.id, newNode)
       return newNode
     },
     removeNode(id: string) {
-      const index = self.nodes.findIndex((node) => node.id === id)
-      if (index !== -1) {
-        self.nodes.splice(index, 1)
-      }
+      self.nodes.delete(id)
     },
-    updateName(newName: string) {
-      const oldPath = self.path
-      const newPath = oldPath.replace(self.name, newName)
-      self.name = newName
-      if (self.type === "directory") {
-        self.nodes.forEach((node) => {
-          node.setPath(`${newPath}/${node.name}`)
-        })
-      }
+    checkNodeExists(name: string): boolean {
+      return self.nodes.has(name)
+    },
+    getNodeByName(name: string): Filesystemnode | undefined {
+      return self.nodes.get(name)
     },
   }))
 

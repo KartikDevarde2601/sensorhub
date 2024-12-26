@@ -8,7 +8,7 @@ import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
 import { type ContentStyle } from "@shopify/flash-list"
 // import { useNavigation } from "@react-navigation/native"
-import { useStores } from "@/models"
+import { useStores, Filesystemnode } from "@/models"
 
 interface FileScreenProps extends BottomNavigatorProps<"File"> {}
 
@@ -18,6 +18,7 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
   // Pull in navigation via hook
   // const navigation = useNavigation()
   const { themed, theme } = useAppTheme()
+  console.log(Filesystem.rootNode.nodes)
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
@@ -39,7 +40,7 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
             content="Add a new device to get started Click Right Bottom Button"
           />
         }
-        renderItem={({ item }) => <FileItem item={item} />}
+        renderItem={({ item }) => <FileItem item={item as unknown as Filesystemnode} />}
       />
     </Screen>
   )

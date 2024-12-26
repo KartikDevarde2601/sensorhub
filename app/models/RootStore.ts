@@ -1,6 +1,6 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { FilesystemnodeStoreModel } from "./FilesystemnodeStore"
-import { FilesystemnodeModel, FileType } from "./Filesystemnode"
+import { FilesystemnodeModel, FileType, Filesystemnode } from "./Filesystemnode"
 import { DeviceStoreModel } from "./DeviceStore"
 import { SessionStoreModel } from "./SessionStore"
 import { TimerStore } from "./Timer"
@@ -19,14 +19,13 @@ export const RootStoreModel = types.model("RootStore").props({
   }),
   Filesystem: types.optional(FilesystemnodeStoreModel, {
     rootNode: FilesystemnodeModel.create({
+      id: "Home",
       name: "Home",
       type: FileType.Directory,
-      nodes: [],
       path: "",
       isSelected: false,
-      isExpanded: false,
     }),
-    selectedNodes: [],
+    selectedNodes: {},
   }),
 })
 

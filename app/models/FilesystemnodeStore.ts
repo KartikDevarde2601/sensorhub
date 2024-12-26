@@ -1,22 +1,17 @@
-import { Instance, SnapshotIn, SnapshotOut, types, flow } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types, flow, IAnyModelType } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { FilesystemnodeModel, IFileSystemNodeActions, FileType } from "./Filesystemnode"
+import { FilesystemnodeModel, FileType, Filesystemnode } from "./Filesystemnode"
 import * as FileSystem from "expo-file-system"
-const { StorageAccessFramework } = FileSystem
-
-export interface IFileSystemNode
-  extends Instance<typeof FilesystemnodeModel>,
-    IFileSystemNodeActions {}
 
 export const FilesystemnodeStoreModel = types
   .model("FilesystemnodeStore")
   .props({
     rootNode: FilesystemnodeModel,
-    selectedNodes: types.array(types.reference(FilesystemnodeModel)),
+    selectedNodes: types.optional(types.map(FilesystemnodeModel), {}),
   })
   .actions(withSetPropAction)
   .views((self) => ({
-    get root(): Array<IFileSystemNode> {
+    get root(): Array<Filesystemnode> {
       return [self.rootNode]
     },
     get rootPath(): string {
@@ -24,24 +19,21 @@ export const FilesystemnodeStoreModel = types
     },
   }))
   .actions((self) => ({
-    addSelectedNode(node: IFileSystemNode) {
-      if (!self.selectedNodes.includes(node)) {
-        self.selectedNodes.push(node)
+    addSelectedNode(node: Filesystemnode) {
+      if (!self.selectedNodes.has(node.id)) {
+        self.selectedNodes.set(node.id, node)
       }
     },
-    removeSelectedNode(node: IFileSystemNode) {
-      const index = self.selectedNodes.indexOf(node)
-      if (index !== -1) {
-        self.selectedNodes.splice(index, 1)
-      }
+    removeSelectedNode(node: Filesystemnode) {
+      self.selectedNodes.delete(node.id)
     },
     clearSelection() {
       self.selectedNodes.clear()
     },
-    findNodeByPath(path: string): IFileSystemNode | null {
-      const findNode = (node: IFileSystemNode, targetPath: string): IFileSystemNode | null => {
+    findNodeByPath(path: string): Filesystemnode | null {
+      const findNode = (node: Filesystemnode, targetPath: string): Filesystemnode | null => {
         if (node.path.trim() === targetPath.trim()) return node
-        for (const childNode of node.nodes) {
+        for (const childNode of node.nodesArray) {
           const found = findNode(childNode, targetPath)
           if (found) return found
         }
@@ -60,12 +52,19 @@ export const FilesystemnodeStoreModel = types
 
       try {
         yield FileSystem.makeDirectoryAsync(newPath, { intermediates: true })
-        return parent.addNode({
-          name,
-          type: FileType.Directory,
-          path: newPath,
-          nodes: [],
-        })
+        const isExist = parent.checkNodeExists(name)
+        console.log("isExist", isExist)
+
+        if (!isExist) {
+          return parent.addNode({
+            id: name,
+            name,
+            type: FileType.Directory,
+            path: newPath,
+          })
+        } else {
+          return parent.getNodeByName(name)
+        }
       } catch (error) {
         console.error("Error creating directory:", error)
         throw error
@@ -75,12 +74,17 @@ export const FilesystemnodeStoreModel = types
     createFile: flow(function* (parentPath: string, name: string, content: string = "") {
       const parent = self.findNodeByPath(parentPath)
       if (!parent) throw new Error("Parent directory not found")
+      const newName = name.replace(/\//g, "_")
+      const newPath = parentPath + "/" + `${newName}.csv`.trim()
 
-      const newPath = parentPath + "/" + `${name}.csv`.trim()
+      console.log("newPath", newPath)
 
       try {
-        yield FileSystem.writeAsStringAsync(newPath, content)
+        yield FileSystem.writeAsStringAsync(newPath, content, {
+          encoding: FileSystem.EncodingType.UTF8,
+        })
         return parent.addNode({
+          id: name,
           name,
           type: FileType.File,
           path: newPath,
@@ -104,24 +108,6 @@ export const FilesystemnodeStoreModel = types
         }
       } catch (error) {
         console.error("Error deleting node:", error)
-        throw error
-      }
-    }),
-
-    moveNode: flow(function* (sourcePath: string, destinationPath: string) {
-      const sourceNode = self.findNodeByPath(sourcePath)
-      if (!sourceNode) throw new Error("Source node not found")
-
-      try {
-        yield FileSystem.moveAsync({
-          from: sourcePath,
-          to: destinationPath,
-        })
-
-        const newName = destinationPath.split("/").pop()!
-        sourceNode.updateName(newName)
-      } catch (error) {
-        console.error("Error moving node:", error)
         throw error
       }
     }),

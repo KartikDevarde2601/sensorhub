@@ -18,7 +18,6 @@ import { colors } from "@/theme"
 import type { ThemedStyle } from "@/theme"
 import { useState } from "react"
 import { useStores } from "@/models"
-import { Topic } from "@/models/Topic"
 import { $styles } from "../theme"
 import { Device } from "@/models/Device"
 import { type ContentStyle } from "@shopify/flash-list"
@@ -32,7 +31,6 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
   const { themed, theme } = useAppTheme()
 
   const { devices } = useStores()
-  console.log(devices.devicesForList)
 
   const { navigation } = _props
 
