@@ -51,8 +51,8 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
     try {
       const baseDirectory = FileSystem.documentDirectory
       if (baseDirectory) {
-        const DirctoryPath = baseDirectory + "Home" + "/Kartik"
-        console.log("DirctoryPath", DirctoryPath)
+        // const DirctoryPath = baseDirectory + "Home" + "/Kartik"
+        // console.log("DirctoryPath", DirctoryPath)
         // const filePath = DirctoryPath + "/data.csv"
         // const data = [
         //   { message: "Hello World kartik", name: "kartik" },
@@ -61,7 +61,7 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         // const csvData = jsonToCSV(data)
 
         // await FileSystem.writeAsStringAsync(filePath, csvData)
-        const read = await FileSystem.readDirectoryAsync(DirctoryPath)
+        const read = await FileSystem.readDirectoryAsync(baseDirectory)
         console.log("Directory", read)
 
         // const fileContent = await FileSystem.readAsStringAsync(filePath)
@@ -108,8 +108,8 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         preset="default"
         style={[$fab, { backgroundColor: theme.colors.palette.primary100 }]}
         pressedStyle={$fabpress}
-        // onPress={() => readDirectory()}
-        onPress={() => setModalVisible(true)}
+        onPress={() => readDirectory()}
+        // onPress={() => setModalVisible(true)}
       />
       <Modal isopen={isModalVisible} withInput={true}>
         <View style={themed($modalContent)}>

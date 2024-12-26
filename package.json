@@ -70,6 +70,7 @@
     "react-native-screens": "3.31.1",
     "react-native-toast-message": "^2.2.1",
     "react-native-uuid": "^2.0.3",
+    "react-native-zip-archive": "^7.0.1",
     "yup": "^1.4.0"
   },
   "devDependencies": {

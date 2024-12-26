@@ -24,8 +24,8 @@ export const FilesystemnodeStoreModel = types
         self.selectedNodes.set(node.id, node)
       }
     },
-    removeSelectedNode(node: Filesystemnode) {
-      self.selectedNodes.delete(node.id)
+    removeSelectedNode(id: string) {
+      self.selectedNodes.delete(id)
     },
     clearSelection() {
       self.selectedNodes.clear()

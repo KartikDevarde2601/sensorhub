@@ -1,10 +1,11 @@
 import React, { useState } from "react"
-import { StyleProp, View, ViewStyle } from "react-native"
+import { StyleProp, View, ViewStyle, TouchableWithoutFeedback } from "react-native"
 import { observer } from "mobx-react-lite"
 import { useAppTheme } from "@/utils/useAppTheme"
 import type { ThemedStyle } from "@/theme"
 import { Icon, ListItem } from "@/components"
 import { Filesystemnode, FileType } from "@/models"
+import { handleLongPress } from "@/utils/zipUtils"
 
 export interface FileItemProps {
   item: Filesystemnode
@@ -27,6 +28,7 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
         style={themed([$itemsContainer, style])}
         text={item.type === FileType.Directory ? item.name : item.name + ".csv"}
         onPress={() => setIsExpanded(!isExpanded)}
+        onLongPress={() => handleLongPress(item.type, item.name, item.path)}
         LeftComponent={
           item.nodesArray.length > 0 || item.type === FileType.Directory ? (
             <View style={themed($LeftComponent)}>
@@ -43,6 +45,7 @@ export const FileItem = observer(function FileItem(props: FileItemProps) {
         }
         textStyle={{ marginLeft: theme.spacing.sm }}
       />
+
       {isExpanded &&
         item.nodesArray.length > 0 &&
         item.nodesArray?.map((node: Filesystemnode, index: number) => (

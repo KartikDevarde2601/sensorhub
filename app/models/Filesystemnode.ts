@@ -1,4 +1,4 @@
-import { Instance, SnapshotIn, SnapshotOut, types, IAnyModelType } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types, IAnyModelType, getParent } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
 export enum FileType {
@@ -49,6 +49,9 @@ export const FilesystemnodeModel = types
     },
     getNodeByName(name: string): Filesystemnode | undefined {
       return self.nodes.get(name)
+    },
+    updateIsSelected() {
+      self.isSelected = !self.isSelected
     },
   }))
 

@@ -18,7 +18,6 @@ export const FileScreen: FC<FileScreenProps> = observer(function FileScreen() {
   // Pull in navigation via hook
   // const navigation = useNavigation()
   const { themed, theme } = useAppTheme()
-  console.log(Filesystem.rootNode.nodes)
 
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
