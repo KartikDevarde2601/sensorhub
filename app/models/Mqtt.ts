@@ -3,7 +3,6 @@ import { createMqttClient, MqttConfig, SubscribeMqtt } from "@kartik2601/rn-mqtt
 import { MqttClient } from "@kartik2601/rn-mqtt-android/dist/Mqtt/MqttClient"
 import { MqttOptionsModel } from "./MqttOptions"
 import { Topic } from "./Topic"
-import { $nonEmptyObject } from "mobx-state-tree/dist/internal"
 
 // Enum for connection status
 export enum ConnectionStatus {
@@ -195,6 +194,7 @@ export const MqttStore = types
     const updateIsConnected = (isConnected: boolean) => {
       self.isconnected = isConnected
     }
+
     return {
       initializeClient,
       connect,
