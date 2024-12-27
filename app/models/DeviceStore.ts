@@ -26,6 +26,8 @@ export const DeviceStoreModel = types
     addDevice(name: string, topics?: Topic[]): Instance<typeof DeviceModel> {
       const newDevice = DeviceModel.create({ id: uuid.v4(), name })
       self.devices.push(newDevice)
+      const topic = `${newDevice.name}/completed`.toLocaleLowerCase()
+      newDevice.addTopic(topic)
       return newDevice
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars

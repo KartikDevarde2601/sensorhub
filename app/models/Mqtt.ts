@@ -87,12 +87,13 @@ export const MqttStore = types
 
     const connect = flow(function* (): Generator<any, void, any> {
       if (!self.client) {
+        console.log("Client not initialized")
         return
       }
 
       try {
         self.status = ConnectionStatus.CONNECTING
-        yield self.client.connect()
+        yield Promise.resolve(self.client.connect())
         console.log("MQTT Connected")
       } catch (error) {
         self.status = ConnectionStatus.ERROR

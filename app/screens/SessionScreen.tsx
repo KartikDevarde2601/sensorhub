@@ -118,16 +118,20 @@ export const SessionScreen: FC<SessionScreenProps> = observer(function SessionSc
           </View>
           <TextField
             value={sessionName}
+            placeholder="Ex. Test Session"
             onChangeText={(value) => setSessionName(value)}
             label="Session Name"
+            inputWrapperStyle={{ backgroundColor: colors.palette.neutral100 }}
           />
           <TextField
             value={description}
+            placeholder="Ex. This session is for testing"
             onChangeText={(value) => setDescription(value)}
             label="Session Description"
+            inputWrapperStyle={{ backgroundColor: colors.palette.neutral100 }}
           />
           <Dropdown
-            label="Select User"
+            label="Select Device"
             isOpen={isDropdownOpen}
             onClick={() => setDropdownOpen(!isDropdownOpen)}
             placeholder="Select User"
@@ -181,7 +185,7 @@ const $devicelistContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
 })
 
 const $modalContent: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
-  backgroundColor: colors.palette.neutral200,
+  backgroundColor: colors.palette.neutral100,
   width: "100%",
   paddingHorizontal: spacing.md,
   paddingVertical: spacing.md,

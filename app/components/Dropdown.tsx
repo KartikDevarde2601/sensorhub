@@ -28,7 +28,7 @@ export function Dropdown<T extends DropdownItem>(props: DropdownProps<T>) {
 
   return (
     <View style={$container}>
-      <Text text={label} preset="default" />
+      <Text text={label} preset="formLabel" />
       <TouchableOpacity onPress={onClick} disabled={disabled} style={themed($dropdownTrigger)}>
         <Text style={themed($selectedText)} text={selectedValue || "Select Device"} />
         <Icon icon={isOpen ? "chevronUp" : "chevronDown"} size={20} />
@@ -41,6 +41,7 @@ export function Dropdown<T extends DropdownItem>(props: DropdownProps<T>) {
 const $container: ViewStyle = {
   flexGrow: 1,
   marginBottom: 12,
+  gap: 10,
 }
 
 const $dropdownTrigger: ThemedStyle<ViewStyle> = ({ colors }) => ({

@@ -47,31 +47,6 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
     setModalVisible(false)
   }
 
-  const readDirectory = async () => {
-    try {
-      const baseDirectory = FileSystem.documentDirectory
-      if (baseDirectory) {
-        // const DirctoryPath = baseDirectory + "Home" + "/Kartik"
-        // console.log("DirctoryPath", DirctoryPath)
-        // const filePath = DirctoryPath + "/data.csv"
-        // const data = [
-        //   { message: "Hello World kartik", name: "kartik" },
-        //   { message: "Hello World", name: "omkar" },
-        // ]
-        // const csvData = jsonToCSV(data)
-
-        // await FileSystem.writeAsStringAsync(filePath, csvData)
-        const read = await FileSystem.readDirectoryAsync(baseDirectory)
-        console.log("Directory", read)
-
-        // const fileContent = await FileSystem.readAsStringAsync(filePath)
-        // console.log(fileContent)
-      }
-    } catch (error) {
-      console.log("Error reading directory:", error)
-    }
-  }
-
   return (
     <Screen preset="fixed" contentContainerStyle={$styles.flex1}>
       <ListView<Device>
@@ -108,8 +83,7 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
         preset="default"
         style={[$fab, { backgroundColor: theme.colors.palette.primary100 }]}
         pressedStyle={$fabpress}
-        onPress={() => readDirectory()}
-        // onPress={() => setModalVisible(true)}
+        onPress={() => setModalVisible(true)}
       />
       <Modal isopen={isModalVisible} withInput={true}>
         <View style={themed($modalContent)}>
@@ -121,12 +95,14 @@ export const DeviceScreen: FC<DeviceScreenProps> = observer(function DeviceScree
             value={deviceName}
             onChangeText={(value) => setDeviceName(value)}
             label="Device Name"
+            inputWrapperStyle={{ backgroundColor: colors.palette.neutral100 }}
             helper="ex: Living Room"
           />
           <View style={themed($buttonContainer)}>
             <Button
               preset="default"
               text="Close"
+              textStyle={{ color: colors.tint }}
               onPress={() => setModalVisible(false)}
               style={themed($button)}
             />
@@ -152,7 +128,7 @@ const $listContentContainer: ThemedStyle<ContentStyle> = ({ spacing }) => ({
 })
 
 const $modalContent: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
-  backgroundColor: colors.palette.neutral200,
+  backgroundColor: colors.palette.neutral100,
   width: "100%",
   paddingHorizontal: spacing.md,
   paddingVertical: spacing.md,

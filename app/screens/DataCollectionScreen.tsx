@@ -42,20 +42,7 @@ export const DataCollectionScreen: FC<DataCollectionScreenProps> = observer(
         if (mqtt.isConnected) {
           mqtt.disconnect()
         }
-      }
-    }, [session])
-
-    const handleSubscibeTopic = useCallback(() => {
-      if (!mqtt.client) {
-        console.log("MQTT client not connected")
-        return
-      }
-      const topices = session?.deviceTopics.slice() as Topic[]
-      console.log(topices)
-      if (topices.length > 0) {
-        topices.forEach((topic) => {
-          mqtt.subscribe(topic)
-        })
+        timer.reset()
       }
     }, [session])
 
